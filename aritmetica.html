@@ -10,6 +10,13 @@
             body {
                 min-height: 100vh;
             }
+            
+            ul {
+                display: flex;
+                list-style: none;
+                padding: 0px;
+
+            }
 
             #telaJogo {
                 display: flex;
@@ -33,6 +40,35 @@
 
             .texto_equacao {
                 font-size: 48px;
+            }
+
+            .bola:hover {
+                transform: scale(1.1);
+            }
+
+            .bola.selected {
+                transform: scale(1.15);
+            }
+
+            .espaco {
+                display: flex;
+                min-width: 80px;
+                min-height: 80px;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .espaco.vazio {
+                border: 5px dashed black;
+                border-radius: 50%;
+            }
+
+            .espaco_texto {
+                display: flex;
+                min-width: 40px;
+                min-height: 80px;
+                justify-content: center;
+                align-items: center;
             }
 
             #telaOpcoes {
@@ -60,14 +96,18 @@
         <div id="telaJogo">
 
             <div id="telaEquacao" >
-                
+                <ul id="lista_equacao">
+
+                </ul>
             </div>
             <div id="telaOpcoes">
+                <ul id="lista_opcoes">
 
+                </ul>
             </div>
             <div id="telaBotoes">
                 <button onclick="">Reiniciar</button>
-                <button>Enviar</button>
+                <button onclick="onClickSend()">Enviar</button>
             </div>
         </div>
         <script>
@@ -98,6 +138,7 @@
                 },
             ];
             
+            // TODO: Ver sobre Sets para melhorar performance
             // Retorna um index aleatorio de um array que não esteja ou não no filtro
             function randomIndex(arr, filtro=[], inverterFiltro=false) {
                 if (filtro.length == 0) {
@@ -162,59 +203,144 @@
                     <circle cx="50" cy="50" r="48" fill="url(#efeito-3d-${numero})" stroke="#333" stroke-width="1.5" />
                 </svg>`;
             }
+            
+            // TODO: Refatorar esse codigo
+            function onClickOption() {          
+                if (this.classList.contains('vazio') && this.hasChildNodes()) {
+                    document.getElementById(this.firstChild.getAttribute('data-value')).appendChild(this.firstChild);
+                    this.removeChild(this.firstChild);
+                    this.firstChild.classList.remove('selected');
+
+                }
+                else if (this.classList.contains('vazio') && !this.hasChildNodes() && estado.bola_selecionada) {
+                    estado.bola_selecionada.parentElement.removeChild(estado.bola_selecionada);
+                    this.appendChild(estado.bola_selecionada);
+                    estado.bola_selecionada.classList.remove('selected');
+                    estado.bola_selecionada = null;
+                }
+                else if (this.hasChildNodes() && this.firstChild.classList.contains('bola')) {
+                    if (this.firstChild.classList.contains('selected')) {
+                        this.firstChild.classList.remove('selected');
+                        estado.bola_selecionada = null;
+                        return;
+                    }
+                    else if (estado.bola_selecionada) {
+                        estado.bola_selecionada.classList.remove('selected');
+                    }
+                    
+                    this.firstChild.classList.add('selected');
+                    estado.bola_selecionada = this.firstChild;
+                }
+            }
+
+            function onClickSend() {
+                let espacos = document.getElementsByClassName('espaco vazio');
+                let i = 0;
+                let res = 0, op = "+";
+                let eq = estado.rodada.equacao;
+
+                for(el in eq) {
+                    switch (eq[el]) {
+                        case "+":
+                            op = "+";
+                            continue;
+                        case "-":
+                            op = "-";
+                            continue;
+                    }
+                    let num = eq[el];
+                    if (eq[el] == null) {
+                        if (espacos[i].hasChildNodes()) {
+                            num = parseInt(espacos[i].firstChild.getAttribute('data-value'));
+                            i++;
+                        }
+                        else {
+                            return alert("Complete a equação antes de enviar");
+                        }
+                    }
+                    
+                    if (op == "+") {
+                        res += num;
+                    }
+                    else {
+                        res -= num;
+                    }
+                }
+
+                if (res == estado.rodada.resultado) {
+                    estado.nivel_atual += estado.nivel_atual < NIVEIS.length - 1 ? 1 : 0;
+                    alert('Acertou');
+                    init();
+                }
+                else {
+                    console.log(res);
+                    alert('Errou');
+                }
+            }
 
             function preencherOpcoes(opcoes) {
                 // Limpa elementos existentes na area de opções
-                let telaOpcoes = document.getElementById('telaOpcoes');
-                if (telaOpcoes.hasChildNodes) {
-                    telaOpcoes.innerHTML = '';
+                let listaOpcoes = document.getElementById('lista_opcoes');
+                if (listaOpcoes.hasChildNodes()) {
+                    listaOpcoes.innerHTML = '';
                 }
-
+                let parser = new DOMParser()
                 // TODO: tratar exceções como número inexistente
                 opcoes.forEach(bola => {
-                    let div = document.createElement('div');
-                    let svg = gerarSvgBola(bola);
+                    let li = document.createElement('li');
+                    let svg = parser.parseFromString(gerarSvgBola(bola), 'text/html').body.firstChild;
+                    svg.classList.add('bola');
+                    svg.setAttribute('data-value', bola)
                     
-                    div.setAttribute('draggable', 'true');
-                    div.setAttribute('data-value', bola);
-                    div.innerHTML = svg;
-                    telaOpcoes.appendChild(div);
+                    li.onclick = onClickOption;
+                    
+                    li.setAttribute('draggable', 'true');
+                    li.id = bola;
+                    li.classList.add('espaco');
+                    li.appendChild(svg);
+
+                    listaOpcoes.appendChild(li);
                 });
             }
             
             // TODO: Tornar função reutilizavel independente do nivel
             function preencherEquacao(equacao, result) {
-                let telaEquacao = document.getElementById('telaEquacao');
-                if (telaEquacao.hasChildNodes) {
-                    telaEquacao.innerHTML = '';
+                let listaEquacao = document.getElementById('lista_equacao');
+                if (listaEquacao.hasChildNodes) {
+                    listaEquacao.innerHTML = '';
                 }
 
-                let div = document.createElement('div');
-                let inner = '';
+                let li, inner;
+                
                 equacao.map((elemento, index) => {
-                    div = document.createElement('div');
+                    li = document.createElement('li');
                     inner = '';
 
                     if (typeof(elemento) === 'number') {
+                        li.classList.add('espaco');
                         inner = gerarSvgBola(elemento);
                     }
                     else if (elemento != null) {
+                        li.classList.add('espaco_texto');
                         inner = `<span class='texto_equacao'>${elemento}</span>`;
                     }
                     else if (elemento == null) {
-                        inner = '___';
+                        li.classList.add('espaco', 'vazio');
+                        li.onclick = onClickOption;
                     }
-                    div.innerHTML = inner;
-                    telaEquacao.appendChild(div);
+                    li.innerHTML = inner;
+                    listaEquacao.appendChild(li);
                 })
                 
-                div = document.createElement('div');
-                div.innerHTML = "<span class='texto_equacao'>=</span>";
-                telaEquacao.appendChild(div);
+                li = document.createElement('li');
+                li.classList.add('espaco_texto');
+                li.innerHTML = "<span class='texto_equacao'>=</span>";
+                listaEquacao.appendChild(li);
 
-                div = document.createElement('div');
-                div.innerHTML = `<span class='texto_equacao'>${result}</span>`;
-                telaEquacao.appendChild(div);
+                li = document.createElement('li');
+                li.classList.add('espaco_texto');
+                li.innerHTML = `<span class='texto_equacao'>${result}</span>`;
+                listaEquacao.appendChild(li);
             }
 
             function gerarEquacao(nivel) {
@@ -264,15 +390,20 @@
                 return {equacao: equacao, resultado: result, sequencia: sequencia};
             }
 
-            function init(nivel) {
-                let state = gerarEquacao(nivel);
-
-                preencherEquacao(state.equacao, state.resultado);
-                preencherOpcoes(state.sequencia);
+            let estado = {
+                bola_selecionada: null,
+                nivel_atual: 0,
+                rodada: null
             }
 
-            let nivel = NIVEIS[3]
-            init(nivel);
+            function init() {
+                estado.rodada = gerarEquacao(NIVEIS[estado.nivel_atual])
+
+                preencherEquacao(estado.rodada.equacao, estado.rodada.resultado);
+                preencherOpcoes(estado.rodada.sequencia);
+            }
+
+            init();
         </script>
     </body>
 </html>
