@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
+        <meta name="viewport" content="width=device-width"/>
         <title>Aritmetica</title>
     </head>
 
     <body>
-
         <style>
             body {
+                margin: 0;
                 min-height: 100vh;
             }
 
@@ -21,9 +22,9 @@
             #telaJogo {
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: space-evenly;
                 align-items: center;
-                min-height: 600px;
+                min-height: 100vh;
             }
 
             #telaEquacao {
@@ -32,14 +33,16 @@
                 align-items: center;
 
                 padding: 10px;
-                min-height: 150px;
-                width: 40%;
-                border: 10px solid black;
 
             }
 
             .texto_equacao {
                 font-size: 48px;
+            }
+            .bola svg {
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
             }
 
             .bola:hover {
@@ -48,10 +51,13 @@
 
             .bola.selected {
                 transform: scale(1.15);
+                filter: drop-shadow(0px 0px 12px #facc15);
             }
 
             .espaco {
                 display: flex;
+                margin-left: 5px;
+                margin-right: 5px;
                 min-width: 80px;
                 min-height: 80px;
                 justify-content: center;
@@ -73,23 +79,24 @@
 
             #telaOpcoes {
                 display: flex;
-                flex-wrap: wrap;           /* Permite que as bolas vão para a linha de baixo */
-                justify-content: center;   /* Centraliza tanto os 4 de cima quanto os 3 de baixo */
+                justify-content: space-evenly;
                 align-items: center;
                 
-                gap: 5px;
-                padding: 10px;
                 
-                min-height: 250px;
-                width: 40%;
-                border: 10px solid black;
+                padding: 15px;
+                background-color: cornflowerblue;
+                border-radius: 25px;
             }
 
             #telaBotoes {
                 padding: 10px;
-                min-height: 100px;
-                width: 40%;
-                border: 10px solid black;
+            }
+
+            #botaoEnviar {
+                min-width: 200px;
+                min-height: 50px;
+
+                font-size: large;
             }
         </style>
 
@@ -100,13 +107,15 @@
 
                 </ul>
             </div>
+
             <div id="telaOpcoes">
                 <ul id="lista_opcoes">
 
                 </ul>
             </div>
+
             <div id="telaBotoes">
-                <button onclick="onClickSend()">Enviar</button>
+                <button id="botaoEnviar" onclick="onClickSend()">Enviar</button>
             </div>
         </div>
         <script>
@@ -134,6 +143,10 @@
                 {
                     equacao: [[CONJ.maiores, "-", CONJ.meio, "-", CONJ.menores]],
                     resultado_positivo: true
+                },
+                {
+                    equacao: [[CONJ.maiores, "-", CONJ.maiores, "-", CONJ.maiores]],
+                    resultado_positivo: false
                 },
             ];
             
@@ -272,7 +285,6 @@
                     init();
                 }
                 else {
-                    console.log(res);
                     alert('Errou');
                 }
             }
@@ -302,7 +314,6 @@
                 });
             }
             
-            // TODO: Tornar função reutilizavel independente do nivel
             function preencherEquacao(equacao, result) {
                 let listaEquacao = document.getElementById('lista_equacao');
                 if (listaEquacao.hasChildNodes) {
