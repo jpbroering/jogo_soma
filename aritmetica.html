@@ -3,9 +3,7 @@
     <head>
         <meta name="viewport" content="width=device-width"/>
         <title>Aritmetica</title>
-    </head>
 
-    <body>
         <style>
             body {
                 margin: 0;
@@ -99,7 +97,9 @@
                 font-size: large;
             }
         </style>
+    </head>
 
+    <body>
         <div id="telaJogo">
 
             <div id="telaEquacao" >
@@ -217,22 +217,22 @@
             }
             
             // TODO: Refatorar esse codigo
-            function onClickOption() {          
-                if (this.classList.contains('vazio') && this.hasChildNodes()) {
-                    document.getElementById(this.firstChild.getAttribute('data-value')).appendChild(this.firstChild);
-                    this.removeChild(this.firstChild);
-                    this.firstChild.classList.remove('selected');
+            function onClickOption(li) {          
+                if (li.classList.contains('vazio') && li.hasChildNodes()) {
+                    document.getElementById(li.firstChild.getAttribute('data-value')).appendChild(li.firstChild);
+                    li.removeChild(li.firstChild);
+                    li.firstChild.classList.remove('selected');
 
                 }
-                else if (this.classList.contains('vazio') && !this.hasChildNodes() && estado.bola_selecionada) {
+                else if (li.classList.contains('vazio') && !li.hasChildNodes() && estado.bola_selecionada) {
                     estado.bola_selecionada.parentElement.removeChild(estado.bola_selecionada);
-                    this.appendChild(estado.bola_selecionada);
+                    li.appendChild(estado.bola_selecionada);
                     estado.bola_selecionada.classList.remove('selected');
                     estado.bola_selecionada = null;
                 }
-                else if (this.hasChildNodes() && this.firstChild.classList.contains('bola')) {
-                    if (this.firstChild.classList.contains('selected')) {
-                        this.firstChild.classList.remove('selected');
+                else if (li.hasChildNodes() && li.firstChild.classList.contains('bola')) {
+                    if (li.firstChild.classList.contains('selected')) {
+                        li.firstChild.classList.remove('selected');
                         estado.bola_selecionada = null;
                         return;
                     }
@@ -240,8 +240,8 @@
                         estado.bola_selecionada.classList.remove('selected');
                     }
                     
-                    this.firstChild.classList.add('selected');
-                    estado.bola_selecionada = this.firstChild;
+                    li.firstChild.classList.add('selected');
+                    estado.bola_selecionada = li.firstChild;
                 }
             }
 
@@ -295,6 +295,7 @@
                 if (listaOpcoes.hasChildNodes()) {
                     listaOpcoes.innerHTML = '';
                 }
+                
                 let parser = new DOMParser()
                 // TODO: tratar exceções como número inexistente
                 opcoes.forEach(bola => {
@@ -303,9 +304,6 @@
                     svg.classList.add('bola');
                     svg.setAttribute('data-value', bola)
                     
-                    li.onclick = onClickOption;
-                    
-                    li.setAttribute('draggable', 'true');
                     li.id = bola;
                     li.classList.add('espaco');
                     li.appendChild(svg);
@@ -316,12 +314,13 @@
             
             function preencherEquacao(equacao, result) {
                 let listaEquacao = document.getElementById('lista_equacao');
-                if (listaEquacao.hasChildNodes) {
+                if (listaEquacao.hasChildNodes()) {
                     listaEquacao.innerHTML = '';
                 }
 
                 let li, inner;
                 
+                // TODO: refatorar
                 equacao.map((elemento, index) => {
                     li = document.createElement('li');
                     inner = '';
@@ -336,7 +335,6 @@
                     }
                     else if (elemento == null) {
                         li.classList.add('espaco', 'vazio');
-                        li.onclick = onClickOption;
                     }
                     li.innerHTML = inner;
                     listaEquacao.appendChild(li);
@@ -412,6 +410,31 @@
                 preencherEquacao(estado.rodada.equacao, estado.rodada.resultado);
                 preencherOpcoes(estado.rodada.sequencia);
             }
+
+            // Adiciona eventos de click
+            let listaEquacao = document.getElementById('lista_equacao');
+            listaEquacao.addEventListener('click', (event)=>{
+                    const opt = event.target.closest('li');
+                    if (!opt || !opt.classList.contains('vazio')) {
+                        return;
+                    }
+                    
+                    if (!opt.firstChild) {
+                        onClickOption(opt)
+                    }
+                    else if (opt.firstChild.classList.contains("bola")) {
+                        onClickOption(opt)
+                    }
+                });
+
+            let listaOpcoes = document.getElementById('lista_opcoes');
+            listaOpcoes.addEventListener('click', (event) => {
+                const opt = event.target.closest('li');
+
+                if (opt && opt.firstChild) {
+                    onClickOption(opt)
+                }
+            });
 
             init();
         </script>
