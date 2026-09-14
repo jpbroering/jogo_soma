@@ -466,6 +466,7 @@
                     let item = randomIndex(equacao, nums, true);
                     sequencia.push(...equacao.splice(item, 1, null));
                 }
+                sequencia.sort((a, b)=>a - b);
 
                 return {equacao: equacao, resultado: result, sequencia: sequencia};
             }
