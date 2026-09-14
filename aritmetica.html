@@ -37,11 +37,6 @@
             .texto_equacao {
                 font-size: 48px;
             }
-            .bola svg {
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-            }
 
             .bola:hover {
                 transform: scale(1.1);
@@ -65,6 +60,16 @@
             .espaco.vazio {
                 border: 5px dashed black;
                 border-radius: 50%;
+            }
+
+            .espaco.vazio:hover {
+                border-color: #faae15;
+                filter: drop-shadow(0px 0px 12px #facc15);
+            }
+
+            .espaco.vazio.livre {
+                border-color: #faae15;
+                
             }
 
             .espaco_texto {
@@ -118,6 +123,28 @@
                 <button id="botaoEnviar" onclick="onClickSend()">Enviar</button>
             </div>
         </div>
+
+        <template>
+            <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <clipPath id="formato-bola">
+                        <circle cx="50" cy="50" r="48" />
+                    </clipPath>
+                    <radialGradient id="efeito-3d" cx="30%" cy="30%" r="70%">
+                        <stop offset="0%" stop-color="white" stop-opacity="0.8" />
+                        <stop offset="40%" stop-color="white" stop-opacity="0" />
+                        <stop offset="100%" stop-color="black" stop-opacity="0.5" />
+                    </radialGradient>
+                </defs>
+
+                <circle cx="50" cy="50" r="48" fill="#F4F4F4" />
+                <rect x="0" y="0" width="100" height="0" fill="#000000" clip-path="url(#formato-bola)" />
+                <circle cx="50" cy="50" r="22" fill="#FFFFFF" />
+                <text x="50" y="59" font-family="Arial, sans-serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#000000">n</text>
+                <circle cx="50" cy="50" r="48" fill="url(#efeito-3d)" stroke="#333" stroke-width="1.5" />
+            </svg>
+        </template>
+
         <script>
             // Conjunto das bolas de bilhar
             const CONJ = {
@@ -195,53 +222,70 @@
                 let rectY = isListrada ? "22" : "0";
                 let rectHeight = isListrada ? "56" : "100";
 
-                return `
-                <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <clipPath id="formato-bola-${numero}">
-                            <circle cx="50" cy="50" r="48" />
-                        </clipPath>
-                        <radialGradient id="efeito-3d-${numero}" cx="30%" cy="30%" r="70%">
-                            <stop offset="0%" stop-color="white" stop-opacity="0.8" />
-                            <stop offset="40%" stop-color="white" stop-opacity="0" />
-                            <stop offset="100%" stop-color="black" stop-opacity="0.5" />
-                        </radialGradient>
-                    </defs>
+                let temp = document.getElementsByTagName("template")[0];
+                let svg = temp.content.firstElementChild.cloneNode(true);
+                let rect = svg.getElementsByTagName("rect")[0];
+                rect.setAttribute("y", rectY);
+                rect.setAttribute("height", rectHeight);
+                rect.setAttribute("fill", cor);
 
-                    <circle cx="50" cy="50" r="48" fill="#F4F4F4" />
-                    <rect x="0" y="${rectY}" width="100" height="${rectHeight}" fill="${cor}" clip-path="url(#formato-bola-${numero})" />
-                    <circle cx="50" cy="50" r="22" fill="#FFFFFF" />
-                    <text x="50" y="59" font-family="Arial, sans-serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#000000">${numero}</text>
-                    <circle cx="50" cy="50" r="48" fill="url(#efeito-3d-${numero})" stroke="#333" stroke-width="1.5" />
-                </svg>`;
+                let text = svg.getElementsByTagName("text")[0];
+                text.innerHTML = numero;
+
+                return svg;
             }
             
-            // TODO: Refatorar esse codigo
-            function onClickOption(li) {          
-                if (li.classList.contains('vazio') && li.hasChildNodes()) {
-                    document.getElementById(li.firstChild.getAttribute('data-value')).appendChild(li.firstChild);
-                    li.removeChild(li.firstChild);
-                    li.firstChild.classList.remove('selected');
+            function destacaEspacos(inverter=true) {
+                espacos = document.getElementsByClassName("espaco vazio")
+                for (let i = 0, l = espacos.length; i < l; i++){
+                    if (inverter) {
+                        espacos[i].classList.add("livre");
+                    }
+                    else {
+                        espacos[i].classList.remove("livre");
+                    }
+                }
+            }
 
-                }
-                else if (li.classList.contains('vazio') && !li.hasChildNodes() && estado.bola_selecionada) {
-                    estado.bola_selecionada.parentElement.removeChild(estado.bola_selecionada);
-                    li.appendChild(estado.bola_selecionada);
-                    estado.bola_selecionada.classList.remove('selected');
+            function tirarBolaFocada() {
+                let bola = estado.bola_selecionada;
+                if (bola) {
+                    bola.classList.remove("selected");
                     estado.bola_selecionada = null;
+                    destacaEspacos(false);
+                    return bola;
                 }
-                else if (li.hasChildNodes() && li.firstChild.classList.contains('bola')) {
-                    if (li.firstChild.classList.contains('selected')) {
-                        li.firstChild.classList.remove('selected');
-                        estado.bola_selecionada = null;
-                        return;
-                    }
-                    else if (estado.bola_selecionada) {
-                        estado.bola_selecionada.classList.remove('selected');
-                    }
-                    
-                    li.firstChild.classList.add('selected');
-                    estado.bola_selecionada = li.firstChild;
+                
+                return null;
+            }
+
+            // Quando uma bola é clicada
+            function onClickBola(li) {
+                const selec = li.firstElementChild;
+                if (li.matches(".vazio")) {
+                    li.removeChild(selec);
+                    document.getElementById(selec.getAttribute('data-value')).appendChild(selec);
+                    document.getElementById(selec.getAttribute('data-value')).classList.add("espaco");
+                    return;
+                }
+
+                selec.classList.add("selected");
+
+                tirarBolaFocada();
+                
+                if (selec.matches(".selected")) {
+                    estado.bola_selecionada = selec;
+                    destacaEspacos();
+                }
+            }
+
+            // Quando um espaço vazio é clicado
+            function onClickVazio(li) {
+                const selec = tirarBolaFocada();
+                if (selec) {
+                    selec.parentElement.classList.remove("espaco");
+                    selec.parentElement.removeChild(selec);
+                    li.appendChild(selec);
                 }
             }
 
@@ -282,11 +326,42 @@
                 if (res == estado.rodada.resultado) {
                     estado.nivel_atual += estado.nivel_atual < NIVEIS.length - 1 ? 1 : 0;
                     alert('Acertou');
-                    init();
+                    estado.rodada = iniciarRodada(estado.nivel_atual);
                 }
                 else {
                     alert('Errou');
                 }
+            }
+
+            // Adiciona todos os eventos utilizados
+            function criarListeners() {
+                // Adiciona eventos de click
+                let listaEquacao = document.getElementById('lista_equacao');
+                listaEquacao.addEventListener('click', (event)=>{
+                    const opt = event.target.closest('li');
+                    if (!opt || !opt.matches(".vazio")) {
+                        return;
+                    }
+                    
+                    if (!opt.firstChild) {
+                        onClickVazio(opt);
+                    }
+                    else if (opt.firstChild.matches(".bola")) {
+                        onClickBola(opt);
+                    }
+                });
+
+                let listaOpcoes = document.getElementById('lista_opcoes');
+                listaOpcoes.addEventListener('click', (event) => {
+                    const opt = event.target.closest('li');
+                    if (!opt) {
+                        return;
+                    }
+
+                    if (opt.firstChild.matches(".bola")) {
+                        onClickBola(opt);
+                    }
+                });
             }
 
             function preencherOpcoes(opcoes) {
@@ -296,11 +371,10 @@
                     listaOpcoes.innerHTML = '';
                 }
                 
-                let parser = new DOMParser()
                 // TODO: tratar exceções como número inexistente
                 opcoes.forEach(bola => {
                     let li = document.createElement('li');
-                    let svg = parser.parseFromString(gerarSvgBola(bola), 'text/html').body.firstChild;
+                    let svg = gerarSvgBola(bola);
                     svg.classList.add('bola');
                     svg.setAttribute('data-value', bola)
                     
@@ -323,22 +397,20 @@
                 // TODO: refatorar
                 equacao.map((elemento, index) => {
                     li = document.createElement('li');
-                    inner = '';
 
                     if (typeof(elemento) === 'number') {
                         li.classList.add('espaco');
-                        inner = gerarSvgBola(elemento);
+                        li.appendChild(gerarSvgBola(elemento));
                     }
                     else if (elemento != null) {
                         li.classList.add('espaco_texto');
-                        inner = `<span class='texto_equacao'>${elemento}</span>`;
+                        li.innerHTML = `<span class='texto_equacao'>${elemento}</span>`;
                     }
                     else if (elemento == null) {
                         li.classList.add('espaco', 'vazio');
                     }
-                    li.innerHTML = inner;
                     listaEquacao.appendChild(li);
-                })
+                });
                 
                 li = document.createElement('li');
                 li.classList.add('espaco_texto');
@@ -398,43 +470,26 @@
                 return {equacao: equacao, resultado: result, sequencia: sequencia};
             }
 
-            let estado = {
+            function iniciarRodada(nivel) {
+                let rodada = gerarEquacao(NIVEIS[nivel]);
+                preencherEquacao(rodada.equacao, rodada.resultado);
+                preencherOpcoes(rodada.sequencia);
+
+                return rodada;
+            }
+
+            const estado = {
                 bola_selecionada: null,
                 nivel_atual: 0,
                 rodada: null
             }
 
             function init() {
-                estado.rodada = gerarEquacao(NIVEIS[estado.nivel_atual])
 
-                preencherEquacao(estado.rodada.equacao, estado.rodada.resultado);
-                preencherOpcoes(estado.rodada.sequencia);
+                criarListeners();
+
+                estado.rodada = iniciarRodada(estado.nivel_atual);
             }
-
-            // Adiciona eventos de click
-            let listaEquacao = document.getElementById('lista_equacao');
-            listaEquacao.addEventListener('click', (event)=>{
-                    const opt = event.target.closest('li');
-                    if (!opt || !opt.classList.contains('vazio')) {
-                        return;
-                    }
-                    
-                    if (!opt.firstChild) {
-                        onClickOption(opt)
-                    }
-                    else if (opt.firstChild.classList.contains("bola")) {
-                        onClickOption(opt)
-                    }
-                });
-
-            let listaOpcoes = document.getElementById('lista_opcoes');
-            listaOpcoes.addEventListener('click', (event) => {
-                const opt = event.target.closest('li');
-
-                if (opt && opt.firstChild) {
-                    onClickOption(opt)
-                }
-            });
 
             init();
         </script>
