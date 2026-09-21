@@ -238,6 +238,18 @@
 
                 return svg;
             }
+
+            function calculaOp(num, op) {
+                switch (op) {
+                    case "+":
+                        return num;
+                    case "-":
+                        return -num;
+                    default:
+                        console.log("Operador inválido");
+                        return 0;
+                }
+            }
             
             function destacaEspacos(inverter=true) {
                 espacos = document.getElementsByClassName("espaco vazio")
@@ -293,42 +305,58 @@
                 }
             }
 
-            function onClickSend() {
+            function validaVazios() {
                 let espacos = document.getElementsByClassName('espaco vazio');
+                let lista = []
+                for (const espaco of espacos) {
+                    if (!espaco.hasChildNodes()) {
+                        return null;
+                    }
+                    let num = parseInt(espaco.firstChild.getAttribute('data-value'));
+                    lista.push(num);
+                }
+
+                return lista;
+            }
+
+            function onClickSend() {
+                let espacos = validaVazios();
+                if (espacos == null) {
+                    return alert("Complete a equação antes de enviar");
+                }
+
                 let i = 0;
                 let res = 0, op = "+";
                 let eq = estado.rodada.equacao;
 
-                for(el in eq) {
-                    switch (eq[el]) {
+                for(const elem of eq) {
+                    let valor;
+                    switch (elem) {
                         case "+":
                             op = "+";
                             continue;
                         case "-":
                             op = "-";
                             continue;
-                    }
-                    let num = eq[el];
-                    if (eq[el] == null) {
-                        if (espacos[i].hasChildNodes()) {
-                            num = parseInt(espacos[i].firstChild.getAttribute('data-value'));
+                        case null:
+                            valor = espacos[i];
                             i++;
-                        }
-                        else {
-                            return alert("Complete a equação antes de enviar");
-                        }
-                    }
+                            break;
+                        default:
+                            valor = elem;
+                    }              
                     
-                    if (op == "+") {
-                        res += num;
-                    }
-                    else {
-                        res -= num;
-                    }
+                    res += calculaOp(valor, op);
                 }
 
                 if (res == estado.rodada.resultado) {
-                    estado.nivel_atual += estado.nivel_atual < NIVEIS.length - 1 ? 1 : 0;
+                    if (estado.num_rodada == estado.rodadas_nivel) {
+                        estado.num_rodada = 1;
+                        estado.nivel_atual += estado.nivel_atual < NIVEIS.length - 1 ? 1 : 0;
+                    }
+                    else {
+                        estado.num_rodada++;
+                    }
                     alert('Acertou');
                     estado.rodada = iniciarRodada(estado.nivel_atual);
                 }
@@ -374,13 +402,14 @@
                 if (listaOpcoes.hasChildNodes()) {
                     listaOpcoes.innerHTML = '';
                 }
-                
+                let dictSequencia = {};
                 // TODO: tratar exceções como número inexistente
                 opcoes.forEach(bola => {
                     let li = document.createElement('li');
                     let svg = gerarSvgBola(bola);
                     svg.classList.add('bola');
-                    svg.setAttribute('data-value', bola)
+                    svg.setAttribute('data-value', bola);
+                    dictSequencia[bola] = svg;
                     
                     li.id = bola;
                     li.classList.add('espaco');
@@ -388,6 +417,8 @@
 
                     listaOpcoes.appendChild(li);
                 });
+
+                return dictSequencia;
             }
             
             function preencherEquacao(equacao, result) {
@@ -429,34 +460,28 @@
 
             function gerarEquacao(nivel) {
                 let sequencia = [...CONJ.menores, ...CONJ.meio, ...CONJ.maiores];
-                let equacao;
-                let result = 0;
-                let nums = [];
+                let padrao = [...randomItem(nivel.equacao)];
+                let result, nums, equacao;
                 do {
                     nums = [];
-                    equacao = [...randomItem(nivel.equacao)];
-                    for (let i = 0, max = equacao.length; i < max + 1; i++) {
-                        if (i % 2 == 0) {
-                            let num = randomItem(equacao[i], nums);
-                            
-                            if (i > 0) {
-                                switch (equacao[i-1]) {
-                                    case "+":
-                                        result += num;
-                                        break;
-                                    case "-":
-                                        result -= num;
-                                        break;
-                                }
-                            } else {
-                                result += num;
-                            }
-                            nums.push(num);
-                            sequencia.splice(sequencia.indexOf(num),1);
-                            equacao.splice(i,1,num);
+                    equacao = [];
+                    result = 0;
+                    op = "+"; // Primeiro número sempre será positivo
+                    for (elem of padrao) {
+                        if (typeof(elem) == "string") {
+                            op = elem;
+                            equacao.push(elem)
+                            continue;
                         }
+                        
+                        let num = randomItem(elem, nums);
+                        result += calculaOp(num, op);
+                            
+                        nums.push(num);
+                        sequencia.splice(sequencia.indexOf(num),1);
+                        equacao.push(num);
                     }
-                } while (nivel.resultado_positivo && result < 0)
+                } while (nivel.resultado_positivo && result < 0);
 
 
                 // Para ter pelo menos 1 valor na equação
@@ -465,20 +490,22 @@
                 while (sequencia.length > 7 - faltando) {
                     sequencia.splice(randomIndex(sequencia), 1);
                 }
-
+                let resposta = {};
                 for (let i = 0; i < faltando; i++) {
                     let item = randomIndex(equacao, nums, true);
-                    sequencia.push(...equacao.splice(item, 1, null));
+                    let num = equacao.splice(item, 1, null);
+                    resposta[item] = null;
+                    sequencia.push(num);
                 }
                 sequencia.sort((a, b)=>a - b);
 
-                return {equacao: equacao, resultado: result, sequencia: sequencia};
+                return {equacao: equacao, resultado: result, sequencia: sequencia, resposta: resposta};
             }
 
             function iniciarRodada(nivel) {
                 let rodada = gerarEquacao(NIVEIS[nivel]);
                 preencherEquacao(rodada.equacao, rodada.resultado);
-                preencherOpcoes(rodada.sequencia);
+                rodada.sequencia = preencherOpcoes(rodada.sequencia);
 
                 return rodada;
             }
@@ -486,6 +513,8 @@
             const estado = {
                 bola_selecionada: null,
                 nivel_atual: 0,
+                rodadas_nivel: 3,
+                num_rodada: 1,
                 rodada: null
             }
 
