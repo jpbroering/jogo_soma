@@ -157,6 +157,9 @@
                 maiores: [11, 12, 13, 14, 15]
             };
 
+            const CONJ_TOTAL = [...CONJ.menores, ...CONJ.meio, ...CONJ.maiores];
+            const CONJ_INFERIOR = [...CONJ.menores, ...CONJ.meio];
+
             const NIVEIS = [
                 {
                     equacao: [[CONJ.menores, "+", CONJ.meio]],
@@ -167,20 +170,34 @@
                     resultado_positivo: true
                 },
                 {
-                    equacao: [[CONJ.menores, "+", CONJ.meio], [CONJ.meio, "+", CONJ.meio],
-                              [CONJ.meio, "-", CONJ.menores], [CONJ.maiores, "-", CONJ.meio]],
+                    equacao: [[CONJ_INFERIOR, "+", CONJ_INFERIOR], [CONJ.meio, "-", CONJ.menores], 
+                              [CONJ.maiores, "-", CONJ.meio]],
                     resultado_positivo: true
                 },
                 {
-                    equacao: [[CONJ.maiores, "-", CONJ.meio, "-", CONJ.menores]],
+                    equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL]],
                     resultado_positivo: true
                 },
                 {
-                    equacao: [[CONJ.maiores, "-", CONJ.maiores, "-", CONJ.maiores]],
+                    equacao: [[CONJ_INFERIOR, "+", CONJ_INFERIOR], [CONJ_TOTAL, "-", CONJ_TOTAL]],
+                    resultado_positivo: false
+                },
+                {
+                    equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL, "-", CONJ_TOTAL]],
+                    resultado_positivo: true
+                },
+                {
+                    equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL, "-", CONJ_TOTAL]],
                     resultado_positivo: false
                 },
             ];
             
+            const CONFIG = {
+                nivel_inicial: 0,
+                rodadas_nivel: 5,
+
+            };
+
             // TODO: Ver sobre Sets para melhorar performance
             // Retorna um index aleatorio de um array que não esteja ou não no filtro
             function randomIndex(arr, filtro=[], inverterFiltro=false) {
