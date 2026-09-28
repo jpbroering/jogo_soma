@@ -8,6 +8,8 @@
             body {
                 margin: 0;
                 min-height: 100vh;
+                background-color: #3B44ED;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
 
             ul {
@@ -19,6 +21,11 @@
 
             .impedeSelect {
                 user-select: none;
+            }
+
+            #telaConfig {
+                display: none;
+                min-height: 100vh;
             }
 
             #telaJogo {
@@ -34,12 +41,20 @@
                 justify-content: space-around;
                 align-items: center;
 
-                padding: 10px;
+                padding: 1em 2em;
+                background-color: #323AC9;
+                border: 4px solid #282EA1;
+                border-radius: 25px;
 
             }
 
             .texto_equacao {
                 font-size: 48px;
+                color: #FFFFFF;
+            }
+
+            .bola {
+                transition: transform 0.2s, filter 0.2s;
             }
 
             .bola:hover {
@@ -62,8 +77,9 @@
             }
 
             .espaco.vazio {
-                border: 5px dashed black;
+                border: 5px dashed #FFFFFF;
                 border-radius: 50%;
+                transition: border-color 0.2s, filter 0.2s;
             }
 
             .espaco.vazio:hover {
@@ -91,7 +107,8 @@
                 
                 
                 padding: 15px;
-                background-color: cornflowerblue;
+                background-color: #323AC9;
+                border: 4px solid #282EA1;
                 border-radius: 25px;
             }
 
@@ -103,12 +120,42 @@
                 min-width: 200px;
                 min-height: 50px;
 
-                font-size: large;
+                transition: transform 0.2s, filter 0.2s;
+
+                border: 0px;
+                border-radius: 1rem;
+                background-color: #1BCD55;
+                color: #FFFFFF;
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+
+            #botaoEnviar:hover {
+                transform: translateY(-6px);
+                filter: drop-shadow(0px 0px 8px #1BCD55);
             }
         </style>
     </head>
 
     <body>
+        <div id="telaConfig">
+            <form action="">
+                <span>Nível</span> <br>
+                <select name="nivel" id="nvlConfig">
+                    <option value="0" >Nível 1</option>
+                    <option value="1" >Nível 2</option>
+                    <option value="2" >Nível 3</option>
+                    <option value="3" >Nível 4</option>
+                    <option value="4" >Nível 5</option>
+                    <option value="5" >Nível 6</option>
+                    <option value="6" >Nível 7</option>
+                </select> <br>
+                <span>Rodadas por nível</span> <br>
+                <input type="number" min="0" name="rodadas" id="rddConfig"> <br>
+
+            </form>
+        </div>
+
         <div class="impedeSelect" id="telaJogo">
 
             <div id="telaEquacao" >
@@ -227,6 +274,18 @@
                 return arr[randomIndex(arr, filtro, inverterFiltro)];
             }
 
+            function calculaOp(num, op) {
+                switch (op) {
+                    case "+":
+                        return num;
+                    case "-":
+                        return -num;
+                    default:
+                        console.log("Operador inválido");
+                        return 0;
+                }
+            }
+            
             // Dicionário com as cores base de 1 a 8, o conjunto de 9 a 15 reutiliza as cores do 1 a 7
             const coresBilhar = {
                 1: '#FFCC00', 2: '#0055CC', 3: '#CC0000', 4: '#4B0082',
@@ -256,18 +315,7 @@
                 return svg;
             }
 
-            function calculaOp(num, op) {
-                switch (op) {
-                    case "+":
-                        return num;
-                    case "-":
-                        return -num;
-                    default:
-                        console.log("Operador inválido");
-                        return 0;
-                }
-            }
-            
+
             function destacaEspacos(inverter=true) {
                 espacos = document.getElementsByClassName("espaco vazio")
                 for (let i = 0, l = espacos.length; i < l; i++){
