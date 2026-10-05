@@ -1,0 +1,439 @@
+// Conjunto das bolas de bilhar
+const CONJ = {
+    menores: [1, 2, 3, 4, 5],
+    meio: [6, 7, 8, 9, 10],
+    maiores: [11, 12, 13, 14, 15]
+};
+
+const CONJ_TOTAL = [...CONJ.menores, ...CONJ.meio, ...CONJ.maiores];
+const CONJ_INFERIOR = [...CONJ.menores, ...CONJ.meio];
+
+const NIVEIS = [
+    {
+        equacao: [[CONJ.menores, "+", CONJ.meio]],
+        resultado_positivo: true
+    },
+    {
+        equacao: [[CONJ.meio, "-", CONJ.menores]],
+        resultado_positivo: true
+    },
+    {
+        equacao: [[CONJ_INFERIOR, "+", CONJ_INFERIOR], [CONJ.meio, "-", CONJ.menores], 
+                    [CONJ.maiores, "-", CONJ.meio]],
+        resultado_positivo: true
+    },
+    {
+        equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL]],
+        resultado_positivo: true
+    },
+    {
+        equacao: [[CONJ_INFERIOR, "+", CONJ_INFERIOR], [CONJ_TOTAL, "-", CONJ_TOTAL]],
+        resultado_positivo: false
+    },
+    {
+        equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL, "-", CONJ_TOTAL]],
+        resultado_positivo: true
+    },
+    {
+        equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL, "-", CONJ_TOTAL]],
+        resultado_positivo: false
+    },
+];
+
+const CONFIG = {
+    nivel_inicial: 0,
+    rodadas_nivel: 5,
+
+};
+
+// TODO: Validar entrada
+function defineConfig() {
+    let telaConfig = document.getElementById("telaConfig");
+    let tela = document.getElementById("tela");
+
+    let nivel = parseInt(document.getElementById("nvlConfig").value);
+    let rodadas = parseInt(document.getElementById("rddConfig").value);
+    
+    CONFIG.nivel_inicial = nivel;
+    CONFIG.rodadas_nivel = rodadas;
+
+    telaConfig.style.display = "none";
+    tela.style.display = "flex";
+    init();
+}
+
+// TODO: Ver sobre Sets para melhorar performance
+// Retorna um index aleatorio de um array que não esteja ou não no filtro
+function randomIndex(arr, filtro=[], inverterFiltro=false) {
+    if (filtro.length == 0) {
+        return Math.floor(Math.random() * arr.length);
+    }
+
+    let filtrado = [];
+    
+    arr.forEach((el, i) => {
+        let contem = filtro.includes(el);
+
+        if (inverterFiltro && contem) {
+            filtrado.push(i);
+        } 
+        else if (!inverterFiltro && !contem) {
+            filtrado.push(i);
+        }
+    });
+
+    let index = filtrado[Math.floor(Math.random() * filtrado.length)];
+    return index;
+}
+
+// Retorna um item aleatorio de um array que não esteja ou não no filtro
+function randomItem(arr, filtro=[], inverterFiltro=false) {
+    return arr[randomIndex(arr, filtro, inverterFiltro)];
+}
+
+function calculaOp(num, op) {
+    switch (op) {
+        case "+":
+            return num;
+        case "-":
+            return -num;
+        default:
+            console.log("Operador inválido");
+            return 0;
+    }
+}
+
+// Dicionário com as cores base de 1 a 8, o conjunto de 9 a 15 reutiliza as cores do 1 a 7
+const coresBilhar = {
+    1: '#FFCC00', 2: '#0055CC', 3: '#CC0000', 4: '#4B0082',
+    5: '#FF6600', 6: '#008033', 7: '#800000', 8: '#222222'
+};
+
+// TODO: Autoajustar tamanho do svg com base na tela
+function gerarSvgBola(numero) {
+    // Descobre a cor base (se for maior que 8, subtrai 8 para pegar a mesma cor)
+    let cor = coresBilhar[numero > 8 ? numero - 8 : numero]; 
+    
+    // Se for maior que 8, é listrada (altura 56, Y 22). Se for menor ou igual, é lisa (altura 100, Y 0)
+    let isListrada = numero > 8;
+    let rectY = isListrada ? "22" : "0";
+    let rectHeight = isListrada ? "56" : "100";
+
+    let temp = document.getElementsByTagName("template")[0];
+    let svg = temp.content.firstElementChild.cloneNode(true);
+    let rect = svg.getElementsByTagName("rect")[0];
+    rect.setAttribute("y", rectY);
+    rect.setAttribute("height", rectHeight);
+    rect.setAttribute("fill", cor);
+
+    let text = svg.getElementsByTagName("text")[0];
+    text.innerHTML = numero;
+
+    return svg;
+}
+
+/* Funções relacionadas ao botão de enviar */
+// Retorna a lista de espaços vazios se todos tiverem preenchidos
+function validaVazios() {
+    let espacos = document.getElementsByClassName('espaco vazio');
+    let lista = []
+    for (const espaco of espacos) {
+        if (!espaco.hasChildNodes()) {
+            return null;
+        }
+        let num = parseInt(espaco.firstChild.getAttribute('data-value'));
+        lista.push(num);
+    }
+
+    return lista;
+}
+
+// Atualiza o texto do nível e rodada atual
+function atualizaInfo(estado) {
+    nivel = document.getElementById("infoNivel");
+    rodada = document.getElementById("infoRodada");
+
+    nivel.innerHTML = `Nível ${estado.nivel_atual+1}`;
+    if (estado.rodadas_nivel !== 1) {
+        rodada.innerHTML = `Rodada ${estado.num_rodada}/${estado.rodadas_nivel}`;
+    }
+}
+
+// Informa se o usuário acertou e passa para a próxima rodada ou nível
+function onClickSend(espacos, estado) {
+    let i = 0;
+    let res = 0, op = "+";
+    let eq = estado.rodada.equacao;
+
+    for(const elem of eq) {
+        let valor;
+        switch (elem) {
+            case "+":
+                op = "+";
+                continue;
+            case "-":
+                op = "-";
+                continue;
+            case null:
+                valor = espacos[i];
+                i++;
+                break;
+            default:
+                valor = elem;
+        }              
+        
+        res += calculaOp(valor, op);
+    }
+
+    if (res == estado.rodada.resultado) {
+        if (estado.num_rodada == estado.rodadas_nivel) {
+            estado.num_rodada = 1;
+            estado.nivel_atual += estado.nivel_atual < NIVEIS.length - 1 ? 1 : 0;
+        }
+        else {
+            estado.num_rodada++;
+        }
+        alert('Acertou');
+        estado.rodada = iniciarRodada(estado.nivel_atual);
+    }
+    else {
+        alert('Errou');
+    }
+}
+
+/* Funções relacionadas a interação com as bolas de bilhar */
+// Destaca os espaços vazios
+function destacaEspacos(inverter=true) {
+    espacos = document.getElementsByClassName("espaco vazio")
+    for (let i = 0, l = espacos.length; i < l; i++){
+        if (inverter) {
+            espacos[i].classList.add("livre");
+        }
+        else {
+            espacos[i].classList.remove("livre");
+        }
+    }
+}
+
+// Retorna a bola selecionada e deseleciona ela se não for nula
+function tirarBolaFocada(estado) {
+    let bola = estado.bola_selecionada;
+    if (bola) {
+        bola.classList.remove("selected");
+        estado.bola_selecionada = null;
+        destacaEspacos(false);
+        return bola;
+    }
+    
+    return null;
+}
+
+// Quando uma bola é clicada
+function onClickBola(li, estado) {
+    const selec = li.firstElementChild;
+    if (li.matches(".vazio")) {
+        li.removeChild(selec);
+        document.getElementById(selec.getAttribute('data-value')).appendChild(selec);
+        document.getElementById(selec.getAttribute('data-value')).classList.add("espaco");
+        return;
+    }
+
+    selec.classList.add("selected");
+
+    tirarBolaFocada(estado);
+    
+    if (selec.matches(".selected")) {
+        estado.bola_selecionada = selec;
+        destacaEspacos();
+    }
+}
+
+// Quando um espaço vazio é clicado
+function onClickVazio(li, estado) {
+    const selec = tirarBolaFocada(estado);
+    if (selec) {
+        selec.parentElement.classList.remove("espaco");
+        selec.parentElement.removeChild(selec);
+        li.appendChild(selec);
+    }
+}
+
+// Adiciona todos os eventos utilizados
+function criarListeners(estado) {
+    // Adiciona eventos de click
+    let listaEquacao = document.getElementById('lista_equacao');
+    listaEquacao.addEventListener('click', (event)=>{
+        const opt = event.target.closest('li');
+        if (!opt || !opt.matches(".vazio")) {
+            return;
+        }
+        
+        if (!opt.firstChild) {
+            onClickVazio(opt, estado);
+        }
+        else if (opt.firstChild.matches(".bola")) {
+            onClickBola(opt, estado);
+        }
+    });
+
+    let listaOpcoes = document.getElementById('lista_opcoes');
+    listaOpcoes.addEventListener('click', (event) => {
+        const opt = event.target.closest('li');
+        if (!opt) {
+            return;
+        }
+
+        if (opt.firstChild.matches(".bola")) {
+            onClickBola(opt, estado);
+        }
+    });
+
+    let enviar = document.getElementById("botaoEnviar");
+    enviar.addEventListener("click", (event) => {
+        let espacos = validaVazios();
+        if (espacos == null) {
+            return alert("Complete a equação antes de enviar");
+        }
+
+        onClickSend(espacos, estado);
+        atualizaInfo(estado);
+    })
+
+    let voltar = document.getElementById("botaoVoltar");
+    voltar.addEventListener("click", (event) => {
+        window.location.reload()
+    })
+}
+
+function preencherOpcoes(opcoes) {
+    // Limpa elementos existentes na area de opções
+    let listaOpcoes = document.getElementById('lista_opcoes');
+    if (listaOpcoes.hasChildNodes()) {
+        listaOpcoes.innerHTML = '';
+    }
+    let dictSequencia = {};
+    // TODO: tratar exceções como número inexistente
+    opcoes.forEach(bola => {
+        let li = document.createElement('li');
+        let svg = gerarSvgBola(bola);
+        svg.classList.add('bola');
+        svg.setAttribute('data-value', bola);
+        dictSequencia[bola] = svg;
+        
+        li.id = bola;
+        li.classList.add('espaco');
+        li.appendChild(svg);
+
+        listaOpcoes.appendChild(li);
+    });
+
+    return dictSequencia;
+}
+
+function preencherEquacao(equacao, result) {
+    let listaEquacao = document.getElementById('lista_equacao');
+    if (listaEquacao.hasChildNodes()) {
+        listaEquacao.innerHTML = '';
+    }
+
+    let li, inner;
+    
+    // TODO: refatorar
+    equacao.map((elemento, index) => {
+        li = document.createElement('li');
+
+        if (typeof(elemento) === 'number') {
+            li.classList.add('espaco');
+            li.appendChild(gerarSvgBola(elemento));
+        }
+        else if (elemento != null) {
+            li.classList.add('espaco_texto');
+            li.innerHTML = `<span class='texto_equacao'>${elemento}</span>`;
+        }
+        else if (elemento == null) {
+            li.classList.add('espaco', 'vazio');
+        }
+        listaEquacao.appendChild(li);
+    });
+    
+    li = document.createElement('li');
+    li.classList.add('espaco_texto');
+    li.innerHTML = "<span class='texto_equacao'>=</span>";
+    listaEquacao.appendChild(li);
+
+    li = document.createElement('li');
+    li.classList.add('espaco_texto');
+    li.innerHTML = `<span class='texto_equacao'>${result}</span>`;
+    listaEquacao.appendChild(li);
+}
+
+function gerarEquacao(nivel) {
+    let sequencia = [...CONJ.menores, ...CONJ.meio, ...CONJ.maiores];
+    let padrao = [...randomItem(nivel.equacao)];
+    let result, nums, equacao;
+    do {
+        nums = [];
+        equacao = [];
+        result = 0;
+        op = "+"; // Primeiro número sempre será positivo
+        for (elem of padrao) {
+            if (typeof(elem) == "string") {
+                op = elem;
+                equacao.push(elem)
+                continue;
+            }
+            
+            let num = randomItem(elem, nums);
+            result += calculaOp(num, op);
+                
+            nums.push(num);
+            sequencia.splice(sequencia.indexOf(num),1);
+            equacao.push(num);
+        }
+    } while (nivel.resultado_positivo && result < 0);
+
+
+    // Para ter pelo menos 1 valor na equação
+    let faltando = Math.floor(Math.random() * (nums.length - 1)) + 1;
+
+    while (sequencia.length > 7 - faltando) {
+        sequencia.splice(randomIndex(sequencia), 1);
+    }
+    let resposta = {};
+    for (let i = 0; i < faltando; i++) {
+        let item = randomIndex(equacao, nums, true);
+        let num = equacao.splice(item, 1, null);
+        resposta[item] = null;
+        sequencia.push(num);
+    }
+    sequencia.sort((a, b)=>a - b);
+
+    return {
+        equacao: equacao,       // Equação incompleta
+        resultado: result,      // Resultado da equação
+        sequencia: sequencia,   // Opções de resposta
+        posResposta: resposta   // Posição das bolas escolhidas
+    };
+}
+
+function iniciarRodada(nivel) {
+    let rodada = gerarEquacao(NIVEIS[nivel]);
+    preencherEquacao(rodada.equacao, rodada.resultado);
+    rodada.sequencia = preencherOpcoes(rodada.sequencia);
+
+    return rodada;
+}
+
+function init() {
+    const estado = {
+        bola_selecionada: null,
+        nivel_atual: CONFIG.nivel_inicial,
+        rodadas_nivel: CONFIG.rodadas_nivel,
+        num_rodada: 1,
+        rodada: null
+    }
+    criarListeners(estado);
+
+    estado.rodada = iniciarRodada(estado.nivel_atual);
+    atualizaInfo(estado);
+}
