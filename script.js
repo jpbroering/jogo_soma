@@ -444,8 +444,9 @@ function preencherEquacao(equacao, result) {
 function gerarEquacao(nivel) {
     let sequencia = [...CONJ.menores, ...CONJ.meio, ...CONJ.maiores];
     let padrao = [...randomItem(nivel.equacao)];
-    let result, nums, equacao;
+    let result, nums, equacao, seq;
     do {
+        seq = [...sequencia];
         nums = [];
         equacao = [];
         result = 0;
@@ -459,12 +460,12 @@ function gerarEquacao(nivel) {
             
             let num = randomItem(elem, nums);
             result += calculaOp(num, op);
-                
             nums.push(num);
-            sequencia.splice(sequencia.indexOf(num),1);
+            seq.splice(seq.indexOf(num),1);
             equacao.push(num);
         }
     } while (nivel.resultado_positivo && result < 0);
+    sequencia = seq;
 
 
     // Para ter pelo menos 1 valor na equação
@@ -477,9 +478,8 @@ function gerarEquacao(nivel) {
     for (let i = 0; i < faltando; i++) {
         let item = randomIndex(equacao, nums, true);
         resposta[item] = null;
-        
-        let num = equacao.splice(item, 1, null);
-        sequencia.push(num);
+        sequencia.push(equacao[item]);
+        equacao.splice(item, 1, null);
     }
     sequencia.sort((a, b)=>a - b);
 
