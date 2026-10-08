@@ -161,31 +161,33 @@ function atualizaInfo(estado) {
 
 // Informa se o usuário acertou e passa para a próxima rodada ou nível
 function onClickSend(espacos, estado) {
-    let i = 0;
-    let res = 0, op = "+";
+    let result = 0, op = "+";
     let eq = estado.rodada.equacao;
+    let resposta = estado.rodada.posResposta;
 
-    for(const elem of eq) {
+    console.log(estado.rodada.posResposta)
+
+    eq.map((elem, index) => {
         let valor;
         switch (elem) {
             case "+":
                 op = "+";
-                continue;
+                break;
             case "-":
                 op = "-";
-                continue;
+                break;
             case null:
-                valor = espacos[i];
-                i++;
+                valor = resposta[index];
                 break;
             default:
                 valor = elem;
         }              
-        
-        res += calculaOp(valor, op);
-    }
+        if (valor) {
+            result += calculaOp(valor, op);
+        }
+    })
 
-    if (res == estado.rodada.resultado) {
+    if (result == estado.rodada.resultado) {
         if (estado.num_rodada == estado.rodadas_nivel) {
             estado.num_rodada = 1;
             estado.nivel_atual += estado.nivel_atual < NIVEIS.length - 1 ? 1 : 0;
@@ -232,9 +234,14 @@ function tirarBolaFocada(estado) {
 function onClickBola(li, estado) {
     const selec = li.firstElementChild;
     if (li.matches(".vazio")) {
+        let val = selec.getAttribute('data-value');
+        let pos = parseInt(li.getAttribute('data-pos'));
+
         li.removeChild(selec);
-        document.getElementById(selec.getAttribute('data-value')).appendChild(selec);
-        document.getElementById(selec.getAttribute('data-value')).classList.add("espaco");
+        document.getElementById(val).appendChild(selec);
+        document.getElementById(val).classList.add("espaco");
+
+        estado.rodada.posResposta[pos] = null;
         return;
     }
 
@@ -252,15 +259,19 @@ function onClickBola(li, estado) {
 function onClickVazio(li, estado) {
     const selec = tirarBolaFocada(estado);
     if (selec) {
+        let val = parseInt(selec.getAttribute('data-value'));
+        let pos = parseInt(li.getAttribute('data-pos'));
         selec.parentElement.classList.remove("espaco");
         selec.parentElement.removeChild(selec);
         li.appendChild(selec);
+        
+        estado.rodada.posResposta[pos] = val;
     }
 }
 
-// Adiciona todos os eventos utilizados
+// Adiciona os eventos utilizados
 function criarListeners(estado) {
-    // Adiciona eventos de click
+    // Adiciona eventos de click na equação
     let listaEquacao = document.getElementById('lista_equacao');
     listaEquacao.addEventListener('click', (event)=>{
         const opt = event.target.closest('li');
@@ -276,6 +287,7 @@ function criarListeners(estado) {
         }
     });
 
+    // Adiciona eventos de click nas opções de bola
     let listaOpcoes = document.getElementById('lista_opcoes');
     listaOpcoes.addEventListener('click', (event) => {
         const opt = event.target.closest('li');
@@ -288,6 +300,7 @@ function criarListeners(estado) {
         }
     });
 
+    // Adiciona o evento de click no botão de enviar resposta
     let enviar = document.getElementById("botaoEnviar");
     enviar.addEventListener("click", (event) => {
         let espacos = validaVazios();
@@ -352,6 +365,7 @@ function preencherEquacao(equacao, result) {
         }
         else if (elemento == null) {
             li.classList.add('espaco', 'vazio');
+            li.setAttribute('data-pos', index);
         }
         listaEquacao.appendChild(li);
     });
@@ -402,8 +416,9 @@ function gerarEquacao(nivel) {
     let resposta = {};
     for (let i = 0; i < faltando; i++) {
         let item = randomIndex(equacao, nums, true);
-        let num = equacao.splice(item, 1, null);
         resposta[item] = null;
+        
+        let num = equacao.splice(item, 1, null);
         sequencia.push(num);
     }
     sequencia.sort((a, b)=>a - b);
