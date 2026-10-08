@@ -47,6 +47,26 @@ const CONFIG = {
 };
 
 let temporizadorResultado;
+const modeloSvgBola = new DOMParser().parseFromString(`
+    <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <clipPath id="formato-bola">
+                <circle cx="50" cy="50" r="48" />
+            </clipPath>
+            <radialGradient id="efeito-3d" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="white" stop-opacity="0.8" />
+                <stop offset="40%" stop-color="white" stop-opacity="0" />
+                <stop offset="100%" stop-color="black" stop-opacity="0.5" />
+            </radialGradient>
+        </defs>
+
+        <circle cx="50" cy="50" r="48" fill="#F4F4F4" />
+        <rect x="0" y="0" width="100" height="0" fill="#000000" clip-path="url(#formato-bola)" />
+        <circle cx="50" cy="50" r="22" fill="#FFFFFF" />
+        <text x="50" y="59" font-family="Arial, sans-serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#000000">n</text>
+        <circle cx="50" cy="50" r="48" fill="url(#efeito-3d)" stroke="#333" stroke-width="1.5" />
+    </svg>
+`, "image/svg+xml").documentElement;
 
 function mostrarResultado(mensagem, tipo) {
     const dialogo = document.getElementById("dialogoResultado");
@@ -59,7 +79,18 @@ function mostrarResultado(mensagem, tipo) {
     clearTimeout(temporizadorResultado);
     temporizadorResultado = setTimeout(() => {
         dialogo.classList.remove("visivel");
-    }, 2200);
+    }, 1200);
+}
+
+function mostrarTelaFim() {
+    document.getElementById("tela").style.display = "none";
+    document.getElementById("dialogoResultado").classList.remove("visivel");
+    clearTimeout(temporizadorResultado);
+
+    const telaFim = document.getElementById("telaFim");
+    telaFim.classList.add("aberta");
+    telaFim.setAttribute("aria-hidden", "false");
+    document.getElementById("botaoReiniciar").focus();
 }
 
 // TODO: Validar entrada
@@ -69,7 +100,7 @@ function defineConfig() {
 
     let nivel = parseInt(document.getElementById("nvlConfig").value);
     let rodadas = parseInt(document.getElementById("rddConfig").value);
-    
+
     CONFIG.nivel_inicial = nivel;
     CONFIG.rodadas_nivel = rodadas;
 
@@ -135,8 +166,7 @@ function gerarSvgBola(numero) {
     let rectY = isListrada ? "22" : "0";
     let rectHeight = isListrada ? "56" : "100";
 
-    let temp = document.getElementsByTagName("template")[0];
-    let svg = temp.content.firstElementChild.cloneNode(true);
+    let svg = modeloSvgBola.cloneNode(true);
     let rect = svg.getElementsByTagName("rect")[0];
     rect.setAttribute("y", rectY);
     rect.setAttribute("height", rectHeight);
@@ -204,9 +234,17 @@ function onClickSend(espacos, estado) {
     })
 
     if (result == estado.rodada.resultado) {
-        if (estado.num_rodada == estado.rodadas_nivel) {
+        const concluiuNivel = estado.num_rodada == estado.rodadas_nivel;
+        const concluiuJogo = concluiuNivel && estado.nivel_atual == NIVEIS.length - 1;
+
+        if (concluiuJogo) {
+            mostrarTelaFim();
+            return;
+        }
+
+        if (concluiuNivel) {
             estado.num_rodada = 1;
-            estado.nivel_atual += estado.nivel_atual < NIVEIS.length - 1 ? 1 : 0;
+            estado.nivel_atual++;
         }
         else {
             estado.num_rodada++;
@@ -333,6 +371,11 @@ function criarListeners(estado) {
     voltar.addEventListener("click", (event) => {
         window.location.reload()
     })
+
+    let reiniciar = document.getElementById("botaoReiniciar");
+    reiniciar.addEventListener("click", () => {
+        window.location.reload();
+    });
 }
 
 function preencherOpcoes(opcoes) {

@@ -8,7 +8,7 @@
 
     <body>
         <main>
-            <div id="telaConfig">
+            <section id="telaConfig">
                 <h1 id="tituloConfig">Jogo de aritmética</h1>
                 <form id="formConfig" action="javascript: defineConfig()">
                     <span class="textoForm">Nível</span> <br>
@@ -25,15 +25,15 @@
                     <input type="number" min="1" max="15" value="5" name="rodadas" class="inputForm" id="rddConfig"> <br>
                     <input type="submit" value="Iniciar" id="enviaForm">
                 </form>
-            </div>
-            <div class="impedeSelect" id="tela">
+            </section>
+            <section class="impedeSelect" id="tela">
                 <header id="barraInfo">
                     <div id="infoJogo">
                         <span class="textoInfo" id="infoNivel"></span>
                         <span class="textoInfo" id="infoRodada"></span>
                     </div>
                     <button id="botaoVoltar">
-                        <svg id="imgVoltar" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path class="st0" d="M497.569,215.166l-55.345-13.064c-4.032-13.946-9.495-27.27-16.376-39.732l29.85-48.303 c4.57-7.397,3.452-16.946-2.688-23.086l-31.99-31.99c-6.129-6.129-15.678-7.248-23.076-2.678l-48.292,29.851 c-12.462-6.882-25.785-12.344-39.732-16.377l-13.064-55.368C294.856,5.978,287.306,0,278.63,0h-45.237 c-8.678,0-16.227,5.978-18.227,14.419l-13.064,55.368c-13.946,4.032-27.27,9.484-39.732,16.377l-48.303-29.872 c-7.387-4.549-16.946-3.441-23.086,2.699L58.99,90.97c-6.13,6.14-7.248,15.709-2.689,23.087l29.862,48.313 c-6.882,12.462-12.344,25.786-16.367,39.721l-55.378,13.065C5.978,217.165,0,224.704,0,233.392v45.226 c0,8.678,5.978,16.237,14.419,18.226l55.378,13.065c4.032,13.946,9.485,27.259,16.367,39.71l-29.872,48.324 c-4.549,7.398-3.441,16.957,2.699,23.098l31.979,31.979c6.14,6.14,15.709,7.257,23.087,2.688l48.323-29.872 c12.463,6.882,25.786,12.344,39.722,16.366l13.064,55.366c2,8.463,9.549,14.431,18.227,14.431h45.237 c8.677,0,16.226-5.968,18.226-14.431l13.064-55.366c13.937-4.021,27.259-9.484,39.712-16.366l48.312,29.861 c7.398,4.57,16.947,3.452,23.087-2.688l31.989-31.99c6.13-6.129,7.248-15.688,2.678-23.087l-29.861-48.302 c6.893-12.452,12.345-25.774,16.377-39.721l55.366-13.065c8.463-2.001,14.42-9.539,14.42-18.226v-45.238 C512,224.714,506.032,217.165,497.569,215.166z M256.006,303.103c-26.002,0-47.098-21.097-47.098-47.108 s21.097-47.108,47.098-47.108c26.011,0,47.108,21.097,47.108,47.108S282.017,303.103,256.006,303.103z"></path> </g> </g></svg>
+                        <img id="imgVoltar" src="imagens/voltar.svg" alt="">
                     </button>
                 </header>
 
@@ -55,29 +55,20 @@
                         <button id="botaoEnviar">Enviar Resposta</button>
                     </div>
                 </div>
-            </div>
+            </section>
+            <section id="telaFim" aria-labelledby="tituloFim" aria-hidden="true">
+                <div class="cartao-fim">
+                    <div class="icone-vitoria" aria-hidden="true">
+                        <img src="imagens/trofeu.svg" alt="">
+                    </div>
+                    <p class="chamada-fim">Jornada concluída</p>
+                    <h1 id="tituloFim">Parabéns!</h1>
+                    <p class="mensagem-fim">Você concluiu o desafio de aritmética. Sua dedicação fez a diferença!</p>
+                    <button id="botaoReiniciar" type="button">Jogar novamente</button>
+                </div>
+            </section>
         </main>
         <div id="dialogoResultado" class="dialogo-resultado" role="status" aria-live="polite" aria-atomic="true"></div>
-        <template>
-            <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <clipPath id="formato-bola">
-                        <circle cx="50" cy="50" r="48" />
-                    </clipPath>
-                    <radialGradient id="efeito-3d" cx="30%" cy="30%" r="70%">
-                        <stop offset="0%" stop-color="white" stop-opacity="0.8" />
-                        <stop offset="40%" stop-color="white" stop-opacity="0" />
-                        <stop offset="100%" stop-color="black" stop-opacity="0.5" />
-                    </radialGradient>
-                </defs>
-
-                <circle cx="50" cy="50" r="48" fill="#F4F4F4" />
-                <rect x="0" y="0" width="100" height="0" fill="#000000" clip-path="url(#formato-bola)" />
-                <circle cx="50" cy="50" r="22" fill="#FFFFFF" />
-                <text x="50" y="59" font-family="Arial, sans-serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#000000">n</text>
-                <circle cx="50" cy="50" r="48" fill="url(#efeito-3d)" stroke="#333" stroke-width="1.5" />
-            </svg>
-        </template>
         <script src="script.js"></script>
     </body>
 </html>
