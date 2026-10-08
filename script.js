@@ -46,6 +46,22 @@ const CONFIG = {
 
 };
 
+let temporizadorResultado;
+
+function mostrarResultado(mensagem, tipo) {
+    const dialogo = document.getElementById("dialogoResultado");
+
+    dialogo.textContent = mensagem;
+    dialogo.classList.remove("sucesso", "incompleto", "erro");
+    dialogo.classList.add(tipo);
+    dialogo.classList.add("visivel");
+
+    clearTimeout(temporizadorResultado);
+    temporizadorResultado = setTimeout(() => {
+        dialogo.classList.remove("visivel");
+    }, 2200);
+}
+
 // TODO: Validar entrada
 function defineConfig() {
     let telaConfig = document.getElementById("telaConfig");
@@ -195,11 +211,11 @@ function onClickSend(espacos, estado) {
         else {
             estado.num_rodada++;
         }
-        alert('Acertou');
+        mostrarResultado("Correto!", "sucesso");
         estado.rodada = iniciarRodada(estado.nivel_atual);
     }
     else {
-        alert('Errou');
+        mostrarResultado("Incorreto, tente novamente!", "erro");
     }
 }
 
@@ -305,7 +321,8 @@ function criarListeners(estado) {
     enviar.addEventListener("click", (event) => {
         let espacos = validaVazios();
         if (espacos == null) {
-            return alert("Complete a equação antes de enviar");
+            mostrarResultado("Complete a equação antes de enviar!", "incompleto");
+            return;
         }
 
         onClickSend(espacos, estado);

@@ -8,6 +8,9 @@
     --color-accent: #ffc857;
     --color-success: #37b779;
     --color-success-shadow: #23885a;
+    --color-result-success: #267a4b;
+    --color-result-warning: #946200;
+    --color-result-error: #b93838;
 
     --radius-card: 25px;
     --radius-control: 12px;
@@ -244,6 +247,45 @@ ul {
 #botaoEnviar:hover {
     transform: translateY(-6px);
     filter: drop-shadow(0 0 8px var(--color-success-shadow));
+}
+
+/* Aviso temporário do resultado da resposta */
+.dialogo-resultado {
+    position: fixed;
+    z-index: 10;
+    top: 24px;
+    left: 50%;
+    min-width: min(280px, calc(100vw - 32px));
+    padding: 16px 24px;
+    border: 2px solid transparent;
+    border-radius: var(--radius-control);
+    box-shadow: 0 8px 24px var(--color-surface-deep);
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: center;
+    color: var(--color-text);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -12px);
+    transition: opacity var(--transition-ui), transform var(--transition-ui), visibility var(--transition-ui);
+}
+
+.dialogo-resultado.visivel {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.dialogo-resultado.sucesso {
+    background-color: var(--color-result-success);
+}
+
+.dialogo-resultado.incompleto {
+    background-color: var(--color-result-warning);
+}
+
+.dialogo-resultado.erro {
+    background-color: var(--color-result-error);
 }
 
 /* Ícones SVG */
