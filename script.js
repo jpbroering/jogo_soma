@@ -441,12 +441,34 @@ function preencherEquacao(equacao, result) {
     listaEquacao.appendChild(li);
 }
 
+function ocultarOperandos(equacao, nums, posResposta, seq, faltando) {
+    let arrFaltando = [];
+    while (arrFaltando.length < faltando) {
+        n = nums.splice(randomIndex(nums), 1)[0];
+        posResposta[equacao.indexOf(n)] = null;
+        equacao.splice(equacao.indexOf(n), 1, null);
+        arrFaltando.push(n);
+    }
+    return arrFaltando;
+}
+
+function gerarSequencia(sequencia, arrFaltando) {
+    let seq = [...sequencia];
+
+    while (seq.length > 7 - arrFaltando.length) {
+        let index = randomIndex(seq);
+        seq.splice(index, 1);
+    }
+    seq = seq.concat(arrFaltando);
+    seq.sort((a, b)=>a - b);
+    return seq;
+}
+
 function gerarEquacao(nivel) {
-    let sequencia = [...CONJ.menores, ...CONJ.meio, ...CONJ.maiores];
     let padrao = [...randomItem(nivel.equacao)];
     let result, nums, equacao, seq;
     do {
-        seq = [...sequencia];
+        seq = [...CONJ_TOTAL];
         nums = [];
         equacao = [];
         result = 0;
@@ -465,29 +487,19 @@ function gerarEquacao(nivel) {
             equacao.push(num);
         }
     } while (nivel.resultado_positivo && result < 0);
-    sequencia = seq;
-
-
-    // Para ter pelo menos 1 valor na equação
+    
+    // Para ter pelo menos 1 número preenchido na equação
+    let posResposta = {};
     let faltando = Math.floor(Math.random() * (nums.length - 1)) + 1;
+    let arrFaltando = ocultarOperandos(equacao, nums, posResposta, seq, faltando);
 
-    while (sequencia.length > 7 - faltando) {
-        sequencia.splice(randomIndex(sequencia), 1);
-    }
-    let resposta = {};
-    for (let i = 0; i < faltando; i++) {
-        let item = randomIndex(equacao, nums, true);
-        resposta[item] = null;
-        sequencia.push(equacao[item]);
-        equacao.splice(item, 1, null);
-    }
-    sequencia.sort((a, b)=>a - b);
+    seq = gerarSequencia(seq, arrFaltando);
 
     return {
-        equacao: equacao,       // Equação incompleta
-        resultado: result,      // Resultado da equação
-        sequencia: sequencia,   // Opções de resposta
-        posResposta: resposta   // Posição das bolas escolhidas
+        equacao: equacao,           // Equação incompleta
+        resultado: result,          // Resultado da equação
+        sequencia: seq,             // Opções de resposta
+        posResposta: posResposta    // Posição das bolas escolhidas
     };
 }
 
