@@ -1,3 +1,5 @@
+import { gerarSequencia } from "./modulos/sequencia.mjs";
+
 // Conjunto das bolas de bilhar
 const CONJ = {
     menores: [1, 2, 3, 4, 5],
@@ -196,8 +198,8 @@ function validaVazios() {
 
 // Atualiza o texto do nível e rodada atual
 function atualizaInfo(estado) {
-    nivel = document.getElementById("infoNivel");
-    rodada = document.getElementById("infoRodada");
+    let nivel = document.getElementById("infoNivel");
+    let rodada = document.getElementById("infoRodada");
 
     nivel.innerHTML = `Nível ${estado.nivel_atual+1}`;
     if (estado.rodadas_nivel !== 1) {
@@ -260,7 +262,7 @@ function onClickSend(espacos, estado) {
 /* Funções relacionadas a interação com as bolas de bilhar */
 // Destaca os espaços vazios
 function destacaEspacos(inverter=true) {
-    espacos = document.getElementsByClassName("espaco vazio")
+    let espacos = document.getElementsByClassName("espaco vazio")
     for (let i = 0, l = espacos.length; i < l; i++){
         if (inverter) {
             espacos[i].classList.add("livre");
@@ -444,24 +446,12 @@ function preencherEquacao(equacao, result) {
 function ocultarOperandos(equacao, nums, posResposta, seq, faltando) {
     let arrFaltando = [];
     while (arrFaltando.length < faltando) {
-        n = nums.splice(randomIndex(nums), 1)[0];
+        let n = nums.splice(randomIndex(nums), 1)[0];
         posResposta[equacao.indexOf(n)] = null;
         equacao.splice(equacao.indexOf(n), 1, null);
         arrFaltando.push(n);
     }
     return arrFaltando;
-}
-
-function gerarSequencia(sequencia, arrFaltando) {
-    let seq = [...sequencia];
-
-    while (seq.length > 7 - arrFaltando.length) {
-        let index = randomIndex(seq);
-        seq.splice(index, 1);
-    }
-    seq = seq.concat(arrFaltando);
-    seq.sort((a, b)=>a - b);
-    return seq;
 }
 
 function gerarEquacao(nivel) {
@@ -472,8 +462,8 @@ function gerarEquacao(nivel) {
         nums = [];
         equacao = [];
         result = 0;
-        op = "+"; // Primeiro número sempre será positivo
-        for (elem of padrao) {
+        let op = "+"; // Primeiro número sempre será positivo
+        for (let elem of padrao) {
             if (typeof(elem) == "string") {
                 op = elem;
                 equacao.push(elem)
@@ -524,3 +514,10 @@ function init() {
     estado.rodada = iniciarRodada(estado.nivel_atual);
     atualizaInfo(estado);
 }
+
+// Adiciona o evento de iniciar o jogo
+let form = document.getElementById('formConfig');
+form.addEventListener('submit', (event)=>{
+    event.preventDefault();
+    defineConfig();
+});
