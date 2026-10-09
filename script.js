@@ -1,3 +1,5 @@
+import { gerarSequencia } from "./modulos/sequencia.mjs";
+
 // Conjunto das bolas de bilhar
 const CONJ = {
     menores: [1, 2, 3, 4, 5],
@@ -427,18 +429,6 @@ function ocultarOperandos(equacao, nums) {
     return arrFaltando;
 }
 
-function gerarSequencia(sequencia, arrFaltando) {
-    let seq = [...sequencia];
-
-    while (seq.length > 7 - arrFaltando.length) {
-        let index = randomIndex(seq);
-        seq.splice(index, 1);
-    }
-    seq = seq.concat(arrFaltando);
-    seq.sort((a, b)=>a - b);
-    return seq;
-}
-
 function gerarEquacao(nivel) {
     let padrao = [...randomItem(nivel.equacao)];
     let result, nums, equacao, seq, op;
@@ -499,3 +489,10 @@ function init() {
     criarListeners(estado);
     iniciarRodada(estado);
 }
+
+// Adiciona o evento de iniciar o jogo
+let form = document.getElementById('formConfig');
+form.addEventListener('submit', (event)=>{
+    event.preventDefault();
+    defineConfig();
+});
