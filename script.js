@@ -266,13 +266,9 @@ function onClickBola(li, estado) {
     const selec = li.firstElementChild;
     if (li.matches(".vazio")) {
         let val = selec.getAttribute('data-value');
-        let index = parseInt(li.getAttribute('data-index'));
-
         li.removeChild(selec);
         document.getElementById(val).appendChild(selec);
         document.getElementById(val).classList.add("espaco");
-
-        estado.rodada.equacao[index].valor = null;
         return;
     }
 
@@ -286,17 +282,29 @@ function onClickBola(li, estado) {
     }
 }
 
+function atualizarEquacao(index, valor, rodada) {
+    if (rodada.equacao.length == 0) {
+        console.log("Equação sem valores");
+        return false;
+    }
+    else if (index < 0 || index >= rodada.equacao.length) {
+        console.log("Index fora dos limites");
+        return false;
+    }
+    else if (rodada.posicoesFixas.includes(index)) {
+        console.log("Posição não pode ser alterada")
+        return false;
+    }
+    rodada.equacao[index].valor = valor;
+    return true;
+}
+
 // Quando um espaço vazio é clicado
-function onClickVazio(li, estado) {
-    const selec = tirarBolaFocada(estado);
+function onClickVazio(li, selec) {
     if (selec) {
-        let val = parseInt(selec.getAttribute('data-value'));
-        let index = parseInt(li.getAttribute('data-index'));
         selec.parentElement.classList.remove("espaco");
         selec.parentElement.removeChild(selec);
         li.appendChild(selec);
-        
-        estado.rodada.equacao[index].valor = val;
     }
 }
 
@@ -305,16 +313,24 @@ function criarListeners(estado) {
     // Adiciona eventos de click na equação
     let listaEquacao = document.getElementById('lista_equacao');
     listaEquacao.addEventListener('click', (event)=>{
-        const opt = event.target.closest('li');
-        if (!opt || !opt.matches(".vazio")) {
+        const opt = event.target.closest('.espaco.vazio');
+        if (!opt) {
             return;
         }
-        
-        if (!opt.firstChild) {
-            onClickVazio(opt, estado);
+        let selec = estado.bola_selecionada;
+
+        let index = parseInt(opt.getAttribute('data-index'));
+        if (!opt.firstChild && selec !== null) {
+            let val = parseInt(selec.getAttribute('data-value'));
+            if (atualizarEquacao(index, val, estado.rodada)) {
+                onClickVazio(opt, selec);
+                tirarBolaFocada(estado);
+            }
         }
-        else if (opt.firstChild.matches(".bola")) {
-            onClickBola(opt, estado);
+        else if (opt.firstChild && opt.firstChild.matches(".bola")) {
+            if (atualizarEquacao(index, null, estado.rodada)) {
+                onClickBola(opt, estado);
+            }
         }
     });
 
@@ -416,7 +432,9 @@ function preencherEquacao(equacao, result) {
     listaEquacao.appendChild(li);
 }
 
-function ocultarOperandos(equacao, nums, faltando) {
+function ocultarOperandos(equacao, nums) {
+    let faltando = Math.floor(Math.random() * (nums.length - 1)) + 1;
+
     let arrFaltando = [];
     while (arrFaltando.length < faltando) {
         let n = nums.splice(randomIndex(nums), 1)[0];
@@ -463,15 +481,18 @@ function gerarEquacao(nivel) {
     } while (nivel.resultado_positivo && result < 0);
     
     // Para ter pelo menos 1 número preenchido na equação
-    let faltando = Math.floor(Math.random() * (nums.length - 1)) + 1;
-    let arrFaltando = ocultarOperandos(equacao, nums, faltando);
+    let arrFaltando = ocultarOperandos(equacao, nums);
+    let posicoesFixas = equacao.map(
+        (n, index) => n.valor !== null ? index : false
+    ).filter(num => num !== false);
 
     seq = gerarSequencia(seq, arrFaltando);
 
     return {
-        equacao: equacao,   // Equação incompleta
-        resultado: result,  // Resultado da equação
-        sequencia: seq      // Opções de resposta
+        equacao: equacao,               // Equação incompleta
+        posicoesFixas: posicoesFixas,   // Posições fixas da equação
+        resultado: result,              // Resultado da equação
+        sequencia: seq                  // Opções de resposta
     };
 }
 
