@@ -206,31 +206,9 @@ function atualizaInfo(estado) {
 
 // Informa se o usuário acertou e passa para a próxima rodada ou nível
 function onClickSend(espacos, estado) {
-    let result = 0, op = "+";
     let eq = estado.rodada.equacao;
-    let resposta = estado.rodada.posResposta;
 
-    console.log(estado.rodada.posResposta)
-
-    eq.map((elem, index) => {
-        let valor;
-        switch (elem) {
-            case "+":
-                op = "+";
-                break;
-            case "-":
-                op = "-";
-                break;
-            case null:
-                valor = resposta[index];
-                break;
-            default:
-                valor = elem;
-        }              
-        if (valor) {
-            result += calculaOp(valor, op);
-        }
-    })
+    let result = eq.reduce((r, numero) => r + numero.sinal * numero.valor, 0);
 
     if (result == estado.rodada.resultado) {
         const concluiuNivel = estado.num_rodada == estado.rodadas_nivel;
@@ -288,13 +266,13 @@ function onClickBola(li, estado) {
     const selec = li.firstElementChild;
     if (li.matches(".vazio")) {
         let val = selec.getAttribute('data-value');
-        let pos = parseInt(li.getAttribute('data-pos'));
+        let index = parseInt(li.getAttribute('data-index'));
 
         li.removeChild(selec);
         document.getElementById(val).appendChild(selec);
         document.getElementById(val).classList.add("espaco");
 
-        estado.rodada.posResposta[pos] = null;
+        estado.rodada.equacao[index].valor = null;
         return;
     }
 
@@ -313,12 +291,12 @@ function onClickVazio(li, estado) {
     const selec = tirarBolaFocada(estado);
     if (selec) {
         let val = parseInt(selec.getAttribute('data-value'));
-        let pos = parseInt(li.getAttribute('data-pos'));
+        let index = parseInt(li.getAttribute('data-index'));
         selec.parentElement.classList.remove("espaco");
         selec.parentElement.removeChild(selec);
         li.appendChild(selec);
         
-        estado.rodada.posResposta[pos] = val;
+        estado.rodada.equacao[index].valor = val;
     }
 }
 
@@ -408,44 +386,42 @@ function preencherEquacao(equacao, result) {
         listaEquacao.innerHTML = '';
     }
 
-    let li, inner;
+    let li;
     
-    // TODO: refatorar
-    equacao.map((elemento, index) => {
+    equacao.forEach((elemento, index) => {
         li = document.createElement('li');
-
-        if (typeof(elemento) === 'number') {
-            li.classList.add('espaco');
-            li.appendChild(gerarSvgBola(elemento));
-        }
-        else if (elemento != null) {
+        if (index != 0) {
+            let sinal = elemento.sinal == 1 ? "+" : "-";
             li.classList.add('espaco_texto');
-            li.innerHTML = `<span class='texto_equacao'>${elemento}</span>`;
+            li.innerHTML = `<span class='texto_equacao'>${sinal}</span>`;
+            listaEquacao.appendChild(li);
         }
-        else if (elemento == null) {
+        
+        li = document.createElement('li');
+        if (typeof(elemento.valor) === 'number') {
+            li.classList.add('espaco');
+            li.appendChild(gerarSvgBola(elemento.valor));
+        }
+
+        else if (elemento.valor == null) {
             li.classList.add('espaco', 'vazio');
-            li.setAttribute('data-pos', index);
+            li.setAttribute('data-index', index);
         }
         listaEquacao.appendChild(li);
     });
-    
-    li = document.createElement('li');
-    li.classList.add('espaco_texto');
-    li.innerHTML = "<span class='texto_equacao'>=</span>";
-    listaEquacao.appendChild(li);
 
     li = document.createElement('li');
     li.classList.add('espaco_texto');
-    li.innerHTML = `<span class='texto_equacao'>${result}</span>`;
+    li.innerHTML = `<span class='texto_equacao'>= ${result}</span>`;
     listaEquacao.appendChild(li);
 }
 
-function ocultarOperandos(equacao, nums, posResposta, seq, faltando) {
+function ocultarOperandos(equacao, nums, faltando) {
     let arrFaltando = [];
     while (arrFaltando.length < faltando) {
-        n = nums.splice(randomIndex(nums), 1)[0];
-        posResposta[equacao.indexOf(n)] = null;
-        equacao.splice(equacao.indexOf(n), 1, null);
+        let n = nums.splice(randomIndex(nums), 1)[0];
+        let indexEquacao = equacao.findIndex(num => num.valor == n);
+        equacao[indexEquacao].valor = null
         arrFaltando.push(n);
     }
     return arrFaltando;
@@ -471,34 +447,31 @@ function gerarEquacao(nivel) {
         nums = [];
         equacao = [];
         result = 0;
-        op = "+"; // Primeiro número sempre será positivo
+        op = 1; // Primeiro número sempre será positivo
         for (elem of padrao) {
             if (typeof(elem) == "string") {
-                op = elem;
-                equacao.push(elem)
+                op = elem == "+" ? 1 : -1;
                 continue;
             }
             
             let num = randomItem(elem, nums);
-            result += calculaOp(num, op);
+            result += num * op;
             nums.push(num);
             seq.splice(seq.indexOf(num),1);
-            equacao.push(num);
+            equacao.push({sinal: op, valor: num});
         }
     } while (nivel.resultado_positivo && result < 0);
     
     // Para ter pelo menos 1 número preenchido na equação
-    let posResposta = {};
     let faltando = Math.floor(Math.random() * (nums.length - 1)) + 1;
-    let arrFaltando = ocultarOperandos(equacao, nums, posResposta, seq, faltando);
+    let arrFaltando = ocultarOperandos(equacao, nums, faltando);
 
     seq = gerarSequencia(seq, arrFaltando);
 
     return {
-        equacao: equacao,           // Equação incompleta
-        resultado: result,          // Resultado da equação
-        sequencia: seq,             // Opções de resposta
-        posResposta: posResposta    // Posição das bolas escolhidas
+        equacao: equacao,   // Equação incompleta
+        resultado: result,  // Resultado da equação
+        sequencia: seq      // Opções de resposta
     };
 }
 
