@@ -109,25 +109,27 @@ function defineConfig() {
     init();
 }
 
-// TODO: Ver sobre Sets para melhorar performance
 // Retorna um index aleatorio de um array que não esteja ou não no filtro
-function randomIndex(arr, filtro=[], inverterFiltro=false) {
+function randomIndex(arr, filtro=[], inFiltro=false) {
+    if (arr.length == 0 || (filtro.length == 0 && inFiltro)) {
+        return -1;
+    }
     if (filtro.length == 0) {
         return Math.floor(Math.random() * arr.length);
     }
+    let filtroSet = new Set(filtro);
 
-    let filtrado = [];
-    
-    arr.forEach((el, i) => {
-        let contem = filtro.includes(el);
+    let indexes = arr.map((num, index) => {
+        let contem = filtroSet.has(num);
 
-        if (inverterFiltro && contem) {
-            filtrado.push(i);
-        } 
-        else if (!inverterFiltro && !contem) {
-            filtrado.push(i);
-        }
+        let valido = contem === inFiltro;
+        return valido ? index : false;
     });
+
+    let filtrado = indexes.filter(num => num !== false);
+    if (filtrado.length == 0) {
+        return -1;
+    }
 
     let index = filtrado[Math.floor(Math.random() * filtrado.length)];
     return index;
