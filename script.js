@@ -117,13 +117,10 @@ function randomIndex(arr, filtro=[], inFiltro=false) {
     if (filtro.length == 0) {
         return Math.floor(Math.random() * arr.length);
     }
-    let filtroSet = new Set(filtro);
 
     let indexes = arr.map((num, index) => {
-        let contem = filtroSet.has(num);
-
-        let valido = contem === inFiltro;
-        return valido ? index : false;
+        let contem = filtro.includes(num);
+        return contem === inFiltro ? index : false;
     });
 
     let filtrado = indexes.filter(num => num !== false);
