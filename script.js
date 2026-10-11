@@ -176,8 +176,8 @@ function mostrarTelaFim() {
 
 // Atualiza o texto do nível e rodada atual
 function atualizaInfo(estado) {
-    nivel = document.getElementById("infoNivel");
-    rodada = document.getElementById("infoRodada");
+    let nivel = document.getElementById("infoNivel");
+    let rodada = document.getElementById("infoRodada");
 
     nivel.innerHTML = `Nível ${estado.nivel_atual+1}`;
     if (estado.rodadas_nivel !== 1) {
@@ -236,7 +236,7 @@ function onClickSend(estado) {
 /* Funções relacionadas a interação com as bolas de bilhar */
 // Destaca os espaços vazios
 function destacaEspacos(inverter=true) {
-    espacos = document.getElementsByClassName("espaco vazio")
+    let espacos = document.getElementsByClassName("espaco vazio")
     for (let i = 0, l = espacos.length; i < l; i++){
         if (inverter) {
             espacos[i].classList.add("livre");
@@ -364,9 +364,7 @@ function criarListeners(estado) {
 function preencherOpcoes(opcoes) {
     // Limpa elementos existentes na area de opções
     let listaOpcoes = document.getElementById('lista_opcoes');
-    if (listaOpcoes.hasChildNodes()) {
-        listaOpcoes.innerHTML = '';
-    }
+    listaOpcoes.replaceChildren();
 
     opcoes.forEach(bola => {
         let li = document.createElement('li');
@@ -384,9 +382,7 @@ function preencherOpcoes(opcoes) {
 
 function preencherEquacao(equacao, result) {
     let listaEquacao = document.getElementById('lista_equacao');
-    if (listaEquacao.hasChildNodes()) {
-        listaEquacao.innerHTML = '';
-    }
+    listaEquacao.replaceChildren();
 
     let li;
     
@@ -405,7 +401,7 @@ function preencherEquacao(equacao, result) {
             li.appendChild(gerarSvgBola(elemento.valor));
         }
 
-        else if (elemento.valor == null) {
+        else if (elemento.valor === null) {
             li.classList.add('espaco', 'vazio');
             li.setAttribute('data-index', index);
         }
@@ -445,14 +441,14 @@ function gerarSequencia(sequencia, arrFaltando) {
 
 function gerarEquacao(nivel) {
     let padrao = [...randomItem(nivel.equacao)];
-    let result, nums, equacao, seq;
+    let result, nums, equacao, seq, op;
     do {
         seq = [...CONJ_TOTAL];
         nums = [];
         equacao = [];
         result = 0;
         op = 1; // Primeiro número sempre será positivo
-        for (elem of padrao) {
+        for (let elem of padrao) {
             if (typeof(elem) == "string") {
                 op = elem == "+" ? 1 : -1;
                 continue;
@@ -484,10 +480,11 @@ function gerarEquacao(nivel) {
 
 function iniciarRodada(estado) {
     estado.rodada = gerarEquacao(NIVEIS[estado.nivel_atual]);
-    
+
     let rodada = estado.rodada;
     preencherEquacao(rodada.equacao, rodada.resultado);
     preencherOpcoes(rodada.sequencia);
+    tirarBolaFocada(estado);
     atualizaInfo(estado);
 }
 
