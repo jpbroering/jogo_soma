@@ -227,8 +227,7 @@ function onClickSend(estado) {
         if (!avancarPartida(estado)) {
             return mostrarTelaFim();
         }
-        atualizaInfo(estado)
-        estado.rodada = iniciarRodada(estado.nivel_atual);
+        iniciarRodada(estado);
     }
 
     mostrarResultado(MENSAGEM_RESULTADO[resultado], resultado);
@@ -368,14 +367,12 @@ function preencherOpcoes(opcoes) {
     if (listaOpcoes.hasChildNodes()) {
         listaOpcoes.innerHTML = '';
     }
-    let dictSequencia = {};
-    // TODO: tratar exceções como número inexistente
+
     opcoes.forEach(bola => {
         let li = document.createElement('li');
         let svg = gerarSvgBola(bola);
         svg.classList.add('bola');
         svg.setAttribute('data-value', bola);
-        dictSequencia[bola] = svg;
         
         li.id = bola;
         li.classList.add('espaco');
@@ -383,8 +380,6 @@ function preencherOpcoes(opcoes) {
 
         listaOpcoes.appendChild(li);
     });
-
-    return dictSequencia;
 }
 
 function preencherEquacao(equacao, result) {
@@ -487,12 +482,13 @@ function gerarEquacao(nivel) {
     };
 }
 
-function iniciarRodada(nivel) {
-    let rodada = gerarEquacao(NIVEIS[nivel]);
+function iniciarRodada(estado) {
+    estado.rodada = gerarEquacao(NIVEIS[estado.nivel_atual]);
+    
+    let rodada = estado.rodada;
     preencherEquacao(rodada.equacao, rodada.resultado);
-    rodada.sequencia = preencherOpcoes(rodada.sequencia);
-
-    return rodada;
+    preencherOpcoes(rodada.sequencia);
+    atualizaInfo(estado);
 }
 
 function init() {
@@ -504,7 +500,5 @@ function init() {
         rodada: null
     }
     criarListeners(estado);
-
-    estado.rodada = iniciarRodada(estado.nivel_atual);
-    atualizaInfo(estado);
+    iniciarRodada(estado);
 }
