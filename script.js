@@ -46,6 +46,12 @@ const CONFIG = {
 
 };
 
+const MENSAGEM_RESULTADO = {
+    "incompleto": "Complete a equação antes de enviar!",
+    "erro": "Incorreto, tente novamente!",
+    "sucesso": "Correto!"
+}
+
 let temporizadorResultado;
 const modeloSvgBola = new DOMParser().parseFromString(`
     <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -137,18 +143,6 @@ function randomItem(arr, filtro=[], inverterFiltro=false) {
     return arr[randomIndex(arr, filtro, inverterFiltro)];
 }
 
-function calculaOp(num, op) {
-    switch (op) {
-        case "+":
-            return num;
-        case "-":
-            return -num;
-        default:
-            console.log("Operador inválido");
-            return 0;
-    }
-}
-
 // Dicionário com as cores base de 1 a 8, o conjunto de 9 a 15 reutiliza as cores do 1 a 7
 const coresBilhar = {
     1: '#FFCC00', 2: '#0055CC', 3: '#CC0000', 4: '#4B0082',
@@ -177,22 +171,6 @@ function gerarSvgBola(numero) {
     return svg;
 }
 
-/* Funções relacionadas ao botão de enviar */
-// Retorna a lista de espaços vazios se todos tiverem preenchidos
-function validaVazios() {
-    let espacos = document.getElementsByClassName('espaco vazio');
-    let lista = []
-    for (const espaco of espacos) {
-        if (!espaco.hasChildNodes()) {
-            return null;
-        }
-        let num = parseInt(espaco.firstChild.getAttribute('data-value'));
-        lista.push(num);
-    }
-
-    return lista;
-}
-
 // Atualiza o texto do nível e rodada atual
 function atualizaInfo(estado) {
     nivel = document.getElementById("infoNivel");
@@ -204,13 +182,27 @@ function atualizaInfo(estado) {
     }
 }
 
+function validaResposta(rodada) {
+    let equacao = rodada.equacao
+    let completo = equacao.every(num => num.valor !== null);
+    if (!completo) {
+        return "incompleto";
+    }
+
+    let resultado = equacao.reduce((soma, num) => soma + num.sinal * num.valor, 0);
+    if (resultado == rodada.resultado) {
+        return "sucesso";
+    }
+    else {
+        return "erro";
+    }
+}
+
 // Informa se o usuário acertou e passa para a próxima rodada ou nível
-function onClickSend(espacos, estado) {
-    let eq = estado.rodada.equacao;
+function onClickSend(estado) {
+    let resultado = validaResposta(estado.rodada);
 
-    let result = eq.reduce((r, numero) => r + numero.sinal * numero.valor, 0);
-
-    if (result == estado.rodada.resultado) {
+    if (resultado == "sucesso") {
         const concluiuNivel = estado.num_rodada == estado.rodadas_nivel;
         const concluiuJogo = concluiuNivel && estado.nivel_atual == NIVEIS.length - 1;
 
@@ -226,12 +218,10 @@ function onClickSend(espacos, estado) {
         else {
             estado.num_rodada++;
         }
-        mostrarResultado("Correto!", "sucesso");
         estado.rodada = iniciarRodada(estado.nivel_atual);
     }
-    else {
-        mostrarResultado("Incorreto, tente novamente!", "erro");
-    }
+
+    mostrarResultado(MENSAGEM_RESULTADO[resultado], resultado);
 }
 
 /* Funções relacionadas a interação com as bolas de bilhar */
@@ -350,13 +340,7 @@ function criarListeners(estado) {
     // Adiciona o evento de click no botão de enviar resposta
     let enviar = document.getElementById("botaoEnviar");
     enviar.addEventListener("click", (event) => {
-        let espacos = validaVazios();
-        if (espacos == null) {
-            mostrarResultado("Complete a equação antes de enviar!", "incompleto");
-            return;
-        }
-
-        onClickSend(espacos, estado);
+        onClickSend(estado);
         atualizaInfo(estado);
     })
 
