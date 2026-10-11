@@ -198,26 +198,33 @@ function validaResposta(rodada) {
     }
 }
 
+function avancarPartida(estado) {
+    const concluiuNivel = estado.num_rodada == estado.rodadas_nivel;
+    const concluiuJogo = concluiuNivel && estado.nivel_atual == NIVEIS.length - 1;
+
+    if (concluiuJogo) {
+        return false;
+    }
+
+    if (concluiuNivel) {
+        estado.num_rodada = 1;
+        estado.nivel_atual++;
+    }
+    else {
+        estado.num_rodada++;
+    }
+    return true;
+}
+
 // Informa se o usuário acertou e passa para a próxima rodada ou nível
 function onClickSend(estado) {
     let resultado = validaResposta(estado.rodada);
 
     if (resultado == "sucesso") {
-        const concluiuNivel = estado.num_rodada == estado.rodadas_nivel;
-        const concluiuJogo = concluiuNivel && estado.nivel_atual == NIVEIS.length - 1;
-
-        if (concluiuJogo) {
-            mostrarTelaFim();
-            return;
+        if (!avancarPartida(estado)) {
+            return mostrarTelaFim();
         }
-
-        if (concluiuNivel) {
-            estado.num_rodada = 1;
-            estado.nivel_atual++;
-        }
-        else {
-            estado.num_rodada++;
-        }
+        atualizaInfo(estado)
         estado.rodada = iniciarRodada(estado.nivel_atual);
     }
 
@@ -339,13 +346,12 @@ function criarListeners(estado) {
 
     // Adiciona o evento de click no botão de enviar resposta
     let enviar = document.getElementById("botaoEnviar");
-    enviar.addEventListener("click", (event) => {
+    enviar.addEventListener("click", () => {
         onClickSend(estado);
-        atualizaInfo(estado);
     })
 
     let voltar = document.getElementById("botaoVoltar");
-    voltar.addEventListener("click", (event) => {
+    voltar.addEventListener("click", () => {
         window.location.reload()
     })
 
