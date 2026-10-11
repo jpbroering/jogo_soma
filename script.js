@@ -43,16 +43,24 @@ const NIVEIS = [
 const CONFIG = {
     nivel_inicial: 0,
     rodadas_nivel: 5,
-
 };
 
-const MENSAGEM_RESULTADO = {
-    "incompleto": "Complete a equação antes de enviar!",
-    "erro": "Incorreto, tente novamente!",
-    "sucesso": "Correto!"
+// Inicia o jogo com base nas configurações selecionadas
+function defineConfig() {
+    let telaConfig = document.getElementById("telaConfig");
+    let tela = document.getElementById("tela");
+
+    let nivel = parseInt(document.getElementById("nvlConfig").value);
+    let rodadas = parseInt(document.getElementById("rddConfig").value);
+
+    CONFIG.nivel_inicial = nivel;
+    CONFIG.rodadas_nivel = rodadas;
+
+    telaConfig.style.display = "none";
+    tela.style.display = "flex";
+    init();
 }
 
-let temporizadorResultado;
 const modeloSvgBola = new DOMParser().parseFromString(`
     <svg width="70" height="70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -74,47 +82,35 @@ const modeloSvgBola = new DOMParser().parseFromString(`
     </svg>
 `, "image/svg+xml").documentElement;
 
-function mostrarResultado(mensagem, tipo) {
-    const dialogo = document.getElementById("dialogoResultado");
+// Dicionário com as cores base de 1 a 8, o conjunto de 9 a 15 reutiliza as cores do 1 a 7
+const coresBilhar = {
+    1: '#FFCC00', 2: '#0055CC', 3: '#CC0000', 4: '#4B0082',
+    5: '#FF6600', 6: '#008033', 7: '#800000', 8: '#222222'
+};
 
-    dialogo.textContent = mensagem;
-    dialogo.classList.remove("sucesso", "incompleto", "erro");
-    dialogo.classList.add(tipo);
-    dialogo.classList.add("visivel");
+// Retorna um svg da bola do número especificado
+function gerarSvgBola(numero) {
+    // Descobre a cor base (se for maior que 8, subtrai 8 para pegar a mesma cor)
+    let cor = coresBilhar[numero > 8 ? numero - 8 : numero]; 
+    
+    // Se for maior que 8, é listrada (altura 56, Y 22). Se for menor ou igual, é lisa (altura 100, Y 0)
+    let isListrada = numero > 8;
+    let rectY = isListrada ? "22" : "0";
+    let rectHeight = isListrada ? "56" : "100";
 
-    clearTimeout(temporizadorResultado);
-    temporizadorResultado = setTimeout(() => {
-        dialogo.classList.remove("visivel");
-    }, 1200);
+    let svg = modeloSvgBola.cloneNode(true);
+    let rect = svg.getElementsByTagName("rect")[0];
+    rect.setAttribute("y", rectY);
+    rect.setAttribute("height", rectHeight);
+    rect.setAttribute("fill", cor);
+
+    let text = svg.getElementsByTagName("text")[0];
+    text.innerHTML = numero;
+
+    return svg;
 }
 
-function mostrarTelaFim() {
-    document.getElementById("tela").style.display = "none";
-    document.getElementById("dialogoResultado").classList.remove("visivel");
-    clearTimeout(temporizadorResultado);
-
-    const telaFim = document.getElementById("telaFim");
-    telaFim.classList.add("aberta");
-    telaFim.setAttribute("aria-hidden", "false");
-    document.getElementById("botaoReiniciar").focus();
-}
-
-// TODO: Validar entrada
-function defineConfig() {
-    let telaConfig = document.getElementById("telaConfig");
-    let tela = document.getElementById("tela");
-
-    let nivel = parseInt(document.getElementById("nvlConfig").value);
-    let rodadas = parseInt(document.getElementById("rddConfig").value);
-
-    CONFIG.nivel_inicial = nivel;
-    CONFIG.rodadas_nivel = rodadas;
-
-    telaConfig.style.display = "none";
-    tela.style.display = "flex";
-    init();
-}
-
+/* Utilitários para números aleatórios */
 // Retorna um index aleatorio de um array que não esteja ou não no filtro
 function randomIndex(arr, filtro=[], inFiltro=false) {
     if (arr.length == 0 || (filtro.length == 0 && inFiltro)) {
@@ -143,32 +139,39 @@ function randomItem(arr, filtro=[], inverterFiltro=false) {
     return arr[randomIndex(arr, filtro, inverterFiltro)];
 }
 
-// Dicionário com as cores base de 1 a 8, o conjunto de 9 a 15 reutiliza as cores do 1 a 7
-const coresBilhar = {
-    1: '#FFCC00', 2: '#0055CC', 3: '#CC0000', 4: '#4B0082',
-    5: '#FF6600', 6: '#008033', 7: '#800000', 8: '#222222'
-};
+let temporizadorResultado;
+const MENSAGEM_RESULTADO = {
+    "incompleto": "Complete a equação antes de enviar!",
+    "erro": "Incorreto, tente novamente!",
+    "sucesso": "Correto!"
+}
 
-// TODO: Autoajustar tamanho do svg com base na tela
-function gerarSvgBola(numero) {
-    // Descobre a cor base (se for maior que 8, subtrai 8 para pegar a mesma cor)
-    let cor = coresBilhar[numero > 8 ? numero - 8 : numero]; 
-    
-    // Se for maior que 8, é listrada (altura 56, Y 22). Se for menor ou igual, é lisa (altura 100, Y 0)
-    let isListrada = numero > 8;
-    let rectY = isListrada ? "22" : "0";
-    let rectHeight = isListrada ? "56" : "100";
+/* Funções relacionadas ao botão de enviar resposta */
+// Mostra popup do resultado
+function mostrarResultado(mensagem, tipo) {
+    const dialogo = document.getElementById("dialogoResultado");
 
-    let svg = modeloSvgBola.cloneNode(true);
-    let rect = svg.getElementsByTagName("rect")[0];
-    rect.setAttribute("y", rectY);
-    rect.setAttribute("height", rectHeight);
-    rect.setAttribute("fill", cor);
+    dialogo.textContent = mensagem;
+    dialogo.classList.remove("sucesso", "incompleto", "erro");
+    dialogo.classList.add(tipo);
+    dialogo.classList.add("visivel");
 
-    let text = svg.getElementsByTagName("text")[0];
-    text.innerHTML = numero;
+    clearTimeout(temporizadorResultado);
+    temporizadorResultado = setTimeout(() => {
+        dialogo.classList.remove("visivel");
+    }, 1200);
+}
 
-    return svg;
+// Mostra a tela de vitória
+function mostrarTelaFim() {
+    document.getElementById("tela").style.display = "none";
+    document.getElementById("dialogoResultado").classList.remove("visivel");
+    clearTimeout(temporizadorResultado);
+
+    const telaFim = document.getElementById("telaFim");
+    telaFim.classList.add("aberta");
+    telaFim.setAttribute("aria-hidden", "false");
+    document.getElementById("botaoReiniciar").focus();
 }
 
 // Atualiza o texto do nível e rodada atual
@@ -182,6 +185,7 @@ function atualizaInfo(estado) {
     }
 }
 
+// Valida a equação da rodada e retorna um String dependendo da resposta
 function validaResposta(rodada) {
     let equacao = rodada.equacao
     let completo = equacao.every(num => num.valor !== null);
@@ -193,11 +197,10 @@ function validaResposta(rodada) {
     if (resultado == rodada.resultado) {
         return "sucesso";
     }
-    else {
-        return "erro";
-    }
+    return "erro";
 }
 
+// Avança para a próxima rodada/nível retornando true se for possível e false se o jogo acabou
 function avancarPartida(estado) {
     const concluiuNivel = estado.num_rodada == estado.rodadas_nivel;
     const concluiuJogo = concluiuNivel && estado.nivel_atual == NIVEIS.length - 1;
@@ -270,9 +273,7 @@ function onClickBola(li, estado) {
     }
 
     selec.classList.add("selected");
-
     tirarBolaFocada(estado);
-    
     if (selec.matches(".selected")) {
         estado.bola_selecionada = selec;
         destacaEspacos();
