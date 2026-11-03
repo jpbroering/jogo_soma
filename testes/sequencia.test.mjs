@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { gerarSequencia } from '../modulos/sequencia.mjs';
+import { gerarSequencia } from '../modulos/model.mjs';
 
 test("sequência não contém exatamente sete elementos", () => {
     let seq = gerarSequencia([1,2,3,4,5,6,7,8,9,10,11,12,13], [14,15]);
