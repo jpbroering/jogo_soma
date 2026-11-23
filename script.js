@@ -1,4 +1,4 @@
-import { criarListeners } from "./modulos/controller.mjs";
+import { criarListeners } from "./modulos/controller/controller.mjs";
 
 function init() {
     criarListeners();
