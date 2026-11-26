@@ -1,6 +1,6 @@
 import { CONJ_TOTAL } from "./config.mjs";
 
-// Retorna um index aleatorio de um array que não esteja ou não no filtro
+/** Retorna um índice aleatório de um array que esteja (ou não) no filtro. */
 function randomIndex(arr, filtro=[], inFiltro=false) {
     if (arr.length == 0 || (filtro.length == 0 && inFiltro)) {
         return -1;
@@ -23,11 +23,12 @@ function randomIndex(arr, filtro=[], inFiltro=false) {
     return index;
 }
 
-// Retorna um item aleatorio de um array que não esteja ou não no filtro
+/** Retorna um item aleatório de um array que esteja (ou não) no filtro. */
 function randomItem(arr, filtro=[], inverterFiltro=false) {
     return arr[randomIndex(arr, filtro, inverterFiltro)];
 }
 
+/** Oculta parte dos operandos da equação e retorna os valores removidos. */
 function ocultarOperandos(equacao, nums) {
     let faltando = Math.floor(Math.random() * (nums.length - 1)) + 1;
 
@@ -41,6 +42,7 @@ function ocultarOperandos(equacao, nums) {
     return arrFaltando;
 }
 
+/** Gera a sequência ordenada de 7 opções contendo os valores ocultos da equação. */
 export function gerarSequencia(sequencia, arrFaltando) {
     let seq = [...sequencia];
 
@@ -53,6 +55,7 @@ export function gerarSequencia(sequencia, arrFaltando) {
     return seq;
 }
 
+/** Cria uma nova rodada a partir da configuração do nível informado. */
 export function Rodada(nivel) {
     let padrao = [...randomItem(nivel.equacao)];
     let result, nums, equacao, seq, op;
@@ -74,7 +77,7 @@ export function Rodada(nivel) {
             seq.splice(seq.indexOf(num),1);
             equacao.push({sinal: op, valor: num, pos: equacao.length});
         }
-    } while (nivel.resultado_positivo && result < 0);
+    } while (nivel.resultadoPositivo && result < 0);
     
     // Para ter pelo menos 1 número preenchido na equação
     let arrFaltando = ocultarOperandos(equacao, nums);

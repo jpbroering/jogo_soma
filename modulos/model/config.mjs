@@ -7,36 +7,37 @@ const CONJ = {
 
 const CONJ_INFERIOR = [...CONJ.menores, ...CONJ.meio];
 
+/** Todas as bolas de bilhar disponíveis (1 a 15). */
 export const CONJ_TOTAL = [...CONJ.menores, ...CONJ.meio, ...CONJ.maiores];
 
 export const NIVEIS = [
     {
         equacao: [[CONJ.menores, "+", CONJ.meio]],
-        resultado_positivo: true
+        resultadoPositivo: true
     },
     {
         equacao: [[CONJ.meio, "-", CONJ.menores]],
-        resultado_positivo: true
+        resultadoPositivo: true
     },
     {
         equacao: [[CONJ_INFERIOR, "+", CONJ_INFERIOR], [CONJ.meio, "-", CONJ.menores], 
                     [CONJ.maiores, "-", CONJ.meio]],
-        resultado_positivo: true
+        resultadoPositivo: true
     },
     {
         equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL]],
-        resultado_positivo: true
+        resultadoPositivo: true
     },
     {
         equacao: [[CONJ_INFERIOR, "+", CONJ_INFERIOR], [CONJ_TOTAL, "-", CONJ_TOTAL]],
-        resultado_positivo: false
+        resultadoPositivo: false
     },
     {
         equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL, "-", CONJ_TOTAL]],
-        resultado_positivo: true
+        resultadoPositivo: true
     },
     {
         equacao: [[CONJ_TOTAL, "+", CONJ_TOTAL, "+", CONJ_TOTAL], [CONJ_TOTAL, "-", CONJ_TOTAL, "-", CONJ_TOTAL]],
-        resultado_positivo: false
+        resultadoPositivo: false
     },
 ];

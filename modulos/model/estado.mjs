@@ -1,38 +1,40 @@
 import { NIVEIS } from "./config.mjs";
 import { Rodada } from "./rodada.mjs";
 
-let estado = {};
-
 const CONFIG = {
-    nivel_inicial: 0,
-    rodadas_nivel: 5,
+    nivelInicial: 0,
+    rodadasNivel: 5,
 };
 
-function Estado(nivel_atual = 0) {
-    this.nivel_atual = nivel_atual;
-    this.num_rodada = 1;
-    this.rodada = new Rodada(NIVEIS[nivel_atual]);
+function Estado(nivelAtual = 0) {
+    this.nivelAtual = nivelAtual;
+    this.numRodada = 1;
+    this.rodada = new Rodada(NIVEIS[nivelAtual]);
 }
 
-// Inicia o jogo com base nas configurações selecionadas
+let estado = new Estado();
+
+/** Inicia o jogo com base nas configurações selecionadas. */
 export function iniciarPartida(nivel, rodadas) {
-    CONFIG.nivel_inicial = nivel;
-    CONFIG.rodadas_nivel = rodadas;
+    CONFIG.nivelInicial = nivel;
+    CONFIG.rodadasNivel = rodadas;
     estado = new Estado(nivel);
 }
 
+/** Retorna os dados necessários para renderizar a rodada atual. */
 export function getInfo() {
     let rodada = estado.rodada;
     return {
         equacao: rodada.equacao,
         resultado: rodada.resultado,
         sequencia: rodada.sequencia,
-        num_rodada: estado.num_rodada,
-        rodadas_nivel: CONFIG.rodadas_nivel,
-        nivel: estado.nivel_atual,
+        numRodada: estado.numRodada,
+        rodadasNivel: CONFIG.rodadasNivel,
+        nivel: estado.nivelAtual,
     };
 }
 
+/** Atualiza o valor de uma posição editável da equação. */
 export function atualizarEquacao(index, valor) {
     let rodada = estado.rodada 
     if (rodada.equacao.length == 0) {
@@ -57,7 +59,7 @@ const MENSAGEM_RESULTADO = {
     "sucesso": "Correto!"
 }
 
-// Valida a equação da rodada e retorna um String dependendo da resposta
+/** Valida a equação da rodada atual ("incompleto", "erro" ou "sucesso"). */
 export function validaResposta() {
     let rodada = estado.rodada;
     let equacao = rodada.equacao;
@@ -66,33 +68,34 @@ export function validaResposta() {
         return "incompleto";
     }
 
-    let resultado = equacao.reduce((soma, num) => soma + num.sinal * num.valor, 0);
+    let resultado = equacao.reduce((soma, num) => soma + num.sinal * Number(num.valor), 0);
     if (resultado == rodada.resultado) {
         return "sucesso";
     }
     return "erro";
 }
 
+/** Retorna a mensagem exibida ao jogador para um resultado de validação. */
 export function getMensagem(resultado="incompleto") {
     return MENSAGEM_RESULTADO[resultado]
 }
 
-// Avança para a próxima rodada/nível retornando true se for possível e false se o jogo acabou
+/** Avança para a próxima rodada ou nível; retorna false se o jogo terminou. */
 export function avancarPartida() {
-    const concluiuNivel = estado.num_rodada == CONFIG.rodadas_nivel;
-    const concluiuJogo = concluiuNivel && estado.nivel_atual == NIVEIS.length - 1;
+    const concluiuNivel = estado.numRodada == CONFIG.rodadasNivel;
+    const concluiuJogo = concluiuNivel && estado.nivelAtual == NIVEIS.length - 1;
 
     if (concluiuJogo) {
         return false;
     }
 
     if (concluiuNivel) {
-        estado.num_rodada = 1;
-        estado.nivel_atual++;
+        estado.numRodada = 1;
+        estado.nivelAtual++;
     }
     else {
-        estado.num_rodada++;
+        estado.numRodada++;
     }
-    estado.rodada = new Rodada(NIVEIS[estado.nivel_atual])
+    estado.rodada = new Rodada(NIVEIS[estado.nivelAtual])
     return true;
 }

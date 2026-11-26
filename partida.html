@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="styles.css">
+        <script type="module" src="modulos/controller/partidaController.mjs"></script>
+        <title>Aritmética — Partida</title>
+    </head>
+    <body>
+        <main>
+            <section class="impede-select" id="tela" aria-label="Partida em andamento">
+                <header id="barra-info">
+                    <div id="info-jogo">
+                        <span class="texto-info" id="info-nivel"></span>
+                        <span class="texto-info" id="info-rodada"></span>
+                    </div>
+                    <a id="botao-voltar" href="index.html" aria-label="Voltar para a tela inicial">
+                        <img id="img-voltar" src="imagens/voltar.svg" alt="" width="36" height="36">
+                    </a>
+                </header>
+
+                <div id="tela-jogo">
+                    <div id="tela-equacao">
+                        <ul id="lista-equacao"></ul>
+                    </div>
+
+                    <div id="tela-opcoes">
+                        <ul id="lista-opcoes"></ul>
+                    </div>
+
+                    <div id="tela-botoes">
+                        <button id="botao-enviar" type="button">Enviar Resposta</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tela-fim" class="hidden" aria-labelledby="titulo-fim">
+                <div class="cartao-fim">
+                    <div class="icone-vitoria" aria-hidden="true">
+                        <img src="imagens/trofeu.svg" alt="" width="48" height="48">
+                    </div>
+                    <p class="chamada-fim">Jornada concluída</p>
+                    <h1 id="titulo-fim">Parabéns!</h1>
+                    <p class="mensagem-fim">Você concluiu o desafio de aritmética. Sua dedicação fez a diferença!</p>
+                    <div class="acoes-fim">
+                        <a id="botao-reiniciar" href="index.html">Jogar novamente</a>
+                        <a id="link-fim-estatisticas" class="botao-secundario" href="estatisticas.html">Ver estatísticas</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div id="dialogo-resultado" class="dialogo-resultado" role="status" aria-live="polite" aria-atomic="true"></div>
+    </body>
+</html>

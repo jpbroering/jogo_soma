@@ -3,73 +3,52 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8">
-        <title>Aritmetica</title>
         <link rel="stylesheet" href="styles.css">
-        <script type="module" src="script.js" defer></script>
+        <script type="module" src="modulos/controller/indexController.mjs"></script>
+        <title>Aritmética — Início</title>
     </head>
 
     <body>
         <main>
-            <section id="telaConfig">
-                <h1 id="tituloConfig">Jogo de aritmética</h1>
-                <form id="formConfig">
-                    <span class="textoForm">Nível</span> <br>
-                    <select name="nivel" class="inputForm" id="nvlConfig">
-                        <option selected value="0" >Nível 1</option>
-                        <option value="1" >Nível 2</option>
-                        <option value="2" >Nível 3</option>
-                        <option value="3" >Nível 4</option>
-                        <option value="4" >Nível 5</option>
-                        <option value="5" >Nível 6</option>
-                        <option value="6" >Nível 7</option>
-                    </select> <br>
-                    <span class="textoForm">Rodadas por nível</span> <br>
-                    <input type="number" min="1" max="15" value="5" name="rodadas" class="inputForm" id="rddConfig"> <br>
-                    <input type="submit" value="Iniciar" id="enviaForm">
+            <section id="tela-config" aria-labelledby="titulo-config">
+                <h1 id="titulo-config">Jogo de aritmética</h1>
+
+                <form id="form-config">
+                    <div class="campo-form">
+                        <label class="texto-form" for="nvl-config">Nível</label>
+                        <select name="nivel" class="input-form" id="nvl-config" required>
+                            <option selected value="0">Nível 1</option>
+                            <option value="1">Nível 2</option>
+                            <option value="2">Nível 3</option>
+                            <option value="3">Nível 4</option>
+                            <option value="4">Nível 5</option>
+                            <option value="5">Nível 6</option>
+                            <option value="6">Nível 7</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-form">
+                        <label class="texto-form" for="rdd-config">Rodadas por nível</label>
+                        <input
+                            type="number"
+                            inputmode="numeric"
+                            min="1"
+                            max="15"
+                            value="5"
+                            name="rodadas"
+                            class="input-form"
+                            id="rdd-config"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" id="envia-form">Iniciar partida</button>
                 </form>
-            </section>
-            <section class="impedeSelect" id="tela">
-                <header id="barraInfo">
-                    <div id="infoJogo">
-                        <span class="textoInfo" id="infoNivel"></span>
-                        <span class="textoInfo" id="infoRodada"></span>
-                    </div>
-                    <button id="botaoVoltar">
-                        <img id="imgVoltar" src="imagens/voltar.svg" alt="">
-                    </button>
-                </header>
 
-                <div id="telaJogo">
-
-                    <div id="telaEquacao" >
-                        <ul id="lista_equacao">
-
-                        </ul>
-                    </div>
-
-                    <div id="telaOpcoes">
-                        <ul id="lista_opcoes">
-
-                        </ul>
-                    </div>
-
-                    <div id="telaBotoes">
-                        <button id="botaoEnviar">Enviar Resposta</button>
-                    </div>
-                </div>
-            </section>
-            <section id="telaFim" aria-labelledby="tituloFim" aria-hidden="true">
-                <div class="cartao-fim">
-                    <div class="icone-vitoria" aria-hidden="true">
-                        <img src="imagens/trofeu.svg" alt="">
-                    </div>
-                    <p class="chamada-fim">Jornada concluída</p>
-                    <h1 id="tituloFim">Parabéns!</h1>
-                    <p class="mensagem-fim">Você concluiu o desafio de aritmética. Sua dedicação fez a diferença!</p>
-                    <button id="botaoReiniciar" type="button">Jogar novamente</button>
-                </div>
+                <nav class="nav-principal" aria-label="Outras telas">
+                    <a href="estatisticas.html" id="link-estatisticas" class="botao-secundario">Ver estatísticas</a>
+                </nav>
             </section>
         </main>
-        <div id="dialogoResultado" class="dialogo-resultado" role="status" aria-live="polite" aria-atomic="true"></div>
     </body>
 </html>

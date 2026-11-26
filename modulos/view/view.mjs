@@ -25,7 +25,7 @@ const coresBilhar = {
     5: '#FF6600', 6: '#008033', 7: '#800000', 8: '#222222'
 };
 
-// Retorna um svg da bola do número especificado
+/** Retorna um elemento SVG da bola do número especificado. */
 function gerarSvgBola(numero) {
     // Descobre a cor base (se for maior que 8, subtrai 8 para pegar a mesma cor)
     let cor = coresBilhar[numero > 8 ? numero - 8 : numero]; 
@@ -42,23 +42,33 @@ function gerarSvgBola(numero) {
     rect.setAttribute("fill", cor);
 
     let text = svg.getElementsByTagName("text")[0];
-    text.innerHTML = numero;
+    text.innerHTML = String(numero);
 
     return svg;
 }
 
+/** Retorna um elemento pelo id, garantindo que exista e seja do tipo esperado. */
+function pegarElemento(id, Tipo = HTMLElement) {
+    const elemento = document.getElementById(id);
+    if (!(elemento instanceof Tipo)) {
+        throw new Error(`Elemento #${id} não encontrado ou inválido.`);
+    }
+    return elemento;
+}
+
+/** Renderiza a lista de opções de bolas disponíveis na rodada. */
 function preencherOpcoes(opcoes) {
     // Limpa elementos existentes na area de opções
-    let listaOpcoes = document.getElementById('lista_opcoes');
+    let listaOpcoes = pegarElemento('lista-opcoes', HTMLUListElement);
     listaOpcoes.replaceChildren();
 
     opcoes.forEach(bola => {
         let li = document.createElement('li');
         let svg = gerarSvgBola(bola);
         svg.classList.add('bola');
-        svg.setAttribute('data-value', bola);
+        svg.setAttribute('data-value', String(bola));
         
-        li.id = bola;
+        li.id = String(bola);
         li.classList.add('espaco');
         li.appendChild(svg);
 
@@ -66,8 +76,9 @@ function preencherOpcoes(opcoes) {
     });
 }
 
+/** Renderiza os termos e o resultado esperado da equação. */
 function preencherEquacao(equacao, result) {
-    let listaEquacao = document.getElementById('lista_equacao');
+    let listaEquacao = document.getElementById('lista-equacao');
     listaEquacao.replaceChildren();
 
     let li;
@@ -76,8 +87,8 @@ function preencherEquacao(equacao, result) {
         li = document.createElement('li');
         if (index != 0) {
             let sinal = elemento.sinal == 1 ? "+" : "-";
-            li.classList.add('espaco_texto');
-            li.innerHTML = `<span class='texto_equacao'>${sinal}</span>`;
+            li.classList.add('espaco-texto');
+            li.innerHTML = `<span class='texto-equacao'>${sinal}</span>`;
             listaEquacao.appendChild(li);
         }
         
@@ -89,42 +100,34 @@ function preencherEquacao(equacao, result) {
 
         else if (!elemento.valor) {
             li.classList.add('espaco', 'vazio');
-            li.setAttribute('data-index', index);
+            li.setAttribute('data-index', String(index));
         }
         listaEquacao.appendChild(li);
     });
 
     li = document.createElement('li');
-    li.classList.add('espaco_texto');
-    li.innerHTML = `<span class='texto_equacao'>= ${result}</span>`;
+    li.classList.add('espaco-texto');
+    li.innerHTML = `<span class='texto-equacao'>= ${result}</span>`;
     listaEquacao.appendChild(li);
 }
 
-let telaConfig = document.getElementById("telaConfig");
 let tela = document.getElementById("tela");
 let bolaFocada = null;
 
-export function ligarConfig(interruptor = true) {
-    telaConfig.style.display = interruptor ? "flex" : "none";
-}
-
+/** Exibe ou oculta a tela da partida. */
 export function ligarPartida(interruptor = true) {
-    tela.style.display = interruptor ? "flex" : "none";
+    tela.classList.toggle("hidden", !interruptor);
 }
 
-// Destaca os espaços vazios
+/** Destaca ou remove o destaque dos espaços vazios da equação. */
 export function destacaEspacos(inverter=true) {
     let espacos = document.getElementsByClassName("espaco vazio")
     for (let i = 0, l = espacos.length; i < l; i++){
-        if (inverter) {
-            espacos[i].classList.add("livre");
-        }
-        else {
-            espacos[i].classList.remove("livre");
-        }
+        espacos[i].classList.toggle("livre", inverter);
     }
 }
 
+/** Define qual elemento de bola está selecionado no momento. */
 export function mudarBolaFocada(bola) {
     if (bolaFocada) {
         tirarBolaFocada();
@@ -134,7 +137,7 @@ export function mudarBolaFocada(bola) {
     destacaEspacos();
 }
 
-// Retorna a bola selecionada e deseleciona ela se não for nula
+/** Remove a seleção da bola focada atual, se houver. */
 export function tirarBolaFocada() {
     if (bolaFocada !== null) {
         bolaFocada.classList.remove('selected');
@@ -143,16 +146,18 @@ export function tirarBolaFocada() {
     }
 }
 
+/** Retorna a bola focada (elemento ou valor numérico), ou null se não houver. */
 export function getBolaFocada(numeric=false) {
     if (bolaFocada === null) {
         return null;
     }
     if (numeric) {
-        return parseInt(bolaFocada.getAttribute('data-value'));
+        return parseInt(bolaFocada.getAttribute('data-value') ?? "");
     }
     return bolaFocada;
 }
 
+/** Remove uma bola da equação e devolve para a lista de opções. */
 export function tirarResposta(li, bola) {
     let val = bola.getAttribute('data-value');
     li.removeChild(bola);
@@ -160,22 +165,23 @@ export function tirarResposta(li, bola) {
     document.getElementById(val).classList.add("espaco");
 }
 
+/** Move a bola escolhida da lista de opções para um espaço vazio da equação. */
 export function colocarResposta(li, bola) {
-    let bolaParent = document.getElementById(bola);
+    let bolaParent = document.getElementById(String(bola));
     let bolaSvg = bolaParent.querySelector('.bola');
     
     bolaParent.classList.remove("espaco");
     bolaParent.removeChild(bolaSvg);
 
-    tirarBolaFocada(bolaSvg);
+    tirarBolaFocada();
     li.appendChild(bolaSvg);
 }
 
 let temporizadorResultado;
 
-// Mostra popup do resultado
+/** Mostra o popup temporário de feedback da resposta. */
 export function mostrarResultado(mensagem, tipo) {
-    const dialogo = document.getElementById("dialogoResultado");
+    const dialogo = pegarElemento("dialogo-resultado", HTMLDivElement);
 
     dialogo.textContent = mensagem;
     dialogo.classList.remove("sucesso", "incompleto", "erro");
@@ -188,42 +194,38 @@ export function mostrarResultado(mensagem, tipo) {
     }, 1200);
 }
 
-const telaFim = document.getElementById("telaFim");
+const telaFim = document.getElementById("tela-fim");
 
-// Mostra a tela de vitória
+/** Alterna a exibição da tela de vitória. */
 export function toggleTelaFim() {
     ligarPartida(false);
-    document.getElementById("dialogoResultado").classList.remove("visivel");
+    document.getElementById("dialogo-resultado").classList.remove("visivel");
     clearTimeout(temporizadorResultado);
 
-    if (telaFim.matches(".aberta")) {
-        telaFim.classList.remove("aberta");
-        telaFim.setAttribute("aria-hidden", "true");
-        return;
-    }
-    telaFim.classList.add("aberta");
-    telaFim.setAttribute("aria-hidden", "false");
-    document.getElementById("botaoReiniciar").focus();
-}
-
-// Atualiza o texto do nível e rodada atual
-function atualizaInfo(num_rodada, rodadas_nivel, nivel_atual) {
-    let nivel = document.getElementById("infoNivel");
-    let rodada = document.getElementById("infoRodada");
-
-    nivel.innerHTML = `Nível ${nivel_atual+1}`;
-    if (rodadas_nivel !== 1) {
-        rodada.innerHTML = `Rodada ${num_rodada}/${rodadas_nivel}`;
+    const estaOculta = telaFim.classList.toggle("hidden");
+    if (!estaOculta) {
+        document.getElementById("botao-reiniciar").focus();
     }
 }
 
+/** Atualiza o texto do nível e da rodada atual no cabeçalho. */
+function atualizaInfo(numRodada, rodadasNivel, nivelAtual) {
+    let nivel = document.getElementById("info-nivel");
+    let rodada = document.getElementById("info-rodada");
+
+    nivel.innerHTML = `Nível ${nivelAtual+1}`;
+    if (rodadasNivel !== 1) {
+        rodada.innerHTML = `Rodada ${numRodada}/${rodadasNivel}`;
+    }
+}
+
+/** Carrega e renderiza uma rodada completa na interface. */
 export function carregarRodada(rodada) {
     tirarBolaFocada();
 
     preencherEquacao(rodada.equacao, rodada.resultado);
     preencherOpcoes(rodada.sequencia);
-    atualizaInfo(rodada.num_rodada, rodada.rodadas_nivel, rodada.nivel);
+    atualizaInfo(rodada.numRodada, rodada.rodadasNivel, rodada.nivel);
 
-    ligarConfig(false);
     ligarPartida();
 }

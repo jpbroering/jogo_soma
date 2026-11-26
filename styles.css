@@ -42,86 +42,146 @@ ul {
     list-style: none;
 }
 
-.impedeSelect {
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.impede-select {
     user-select: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
+.botao-secundario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 12px 20px;
+    background-color: var(--color-surface-deep);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform var(--transition-ui), border-color var(--transition-ui), filter var(--transition-ui);
+}
+
+.botao-secundario:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent);
+    filter: drop-shadow(0 0 8px var(--color-surface-deep));
+}
+
 /* Tela de configuração */
-#telaConfig {
+#tela-config {
     display: flex;
     flex-direction: column;
-    width: fit-content;
+    gap: 16px;
+    width: min(100% - 32px, 360px);
     margin: auto;
-    padding: 20px;
+    padding: 24px;
     background-color: var(--color-surface);
     border: 2px solid var(--color-border);
     border-radius: 16px;
     filter: drop-shadow(0 0 12px var(--color-surface-deep));
 }
 
-#tituloConfig {
-    margin-top: 0;
+#titulo-config {
+    margin: 0;
     color: var(--color-text);
     font-size: 1.5rem;
 }
 
-.textoForm {
+#form-config {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.campo-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.texto-form {
     color: var(--color-text);
     font-size: 1rem;
     font-weight: bold;
 }
 
-.inputForm {
+.input-form {
     width: 100%;
-    margin: 8px 0;
+    min-height: 48px;
     padding: 12px;
     background-color: var(--color-surface-deep);
     border: 2px solid var(--color-border);
     border-radius: var(--radius-control);
     color: var(--color-text);
-    font-size: 1rem;
+    font: inherit;
+    font-size: max(1rem, 1em);
     font-weight: bold;
 }
 
-#enviaForm {
+#envia-form {
     width: 100%;
-    margin-top: 12px;
+    min-height: 48px;
     padding: 12px 20px;
     background-color: var(--color-accent);
     border: 0;
     border-radius: var(--radius-control);
-    color: var(--color-text);
+    color: var(--color-surface-deep);
+    font: inherit;
     font-size: 1.1rem;
     font-weight: bold;
+    cursor: pointer;
     transition: transform var(--transition-ui), filter var(--transition-ui);
 }
 
-#enviaForm:hover {
+#envia-form:hover {
     transform: translateY(-2px);
     filter: drop-shadow(0 0 12px var(--color-surface-deep));
 }
 
+.nav-principal {
+    display: flex;
+}
+
+.nav-principal .botao-secundario {
+    width: 100%;
+}
+
 /* Cabeçalho e informações da rodada */
 #tela {
-    display: none;
+    display: flex;
     flex-direction: column;
     justify-content: flex-start;
     min-width: 100%;
 }
 
-#barraInfo {
+#barra-info {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 20px;
 }
 
-#infoJogo {
+#info-jogo {
     align-content: center;
     align-items: center;
     margin-left: 12px;
 }
 
-.textoInfo {
+.texto-info {
     padding-right: 40px;
     color: var(--color-text);
     font-size: 1.5rem;
@@ -129,24 +189,30 @@ ul {
     text-align: center;
 }
 
-#botaoVoltar {
-    align-content: center;
+#botao-voltar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    min-height: 48px;
     background-color: transparent;
     border: 0;
+    border-radius: var(--radius-control);
     transition: transform var(--transition-ui), filter var(--transition-ui);
 }
 
-#botaoVoltar:hover {
+#botao-voltar:hover {
     transform: scale(1.15);
     filter: drop-shadow(0 0 8px var(--color-surface-deep));
 }
 
-#imgVoltar {
+#img-voltar {
     width: 36px;
+    height: 36px;
 }
 
 /* Área de jogo e equação */
-#telaJogo {
+#tela-jogo {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
@@ -154,21 +220,21 @@ ul {
     height: 100%;
 }
 
-#telaEquacao,
-#telaOpcoes {
+#tela-equacao,
+#tela-opcoes {
     background-color: var(--color-surface);
     border: 4px solid var(--color-border);
     border-radius: var(--radius-card);
 }
 
-#telaEquacao {
+#tela-equacao {
     display: flex;
     justify-content: space-around;
     align-items: center;
     padding: 1em 2em;
 }
 
-.texto_equacao {
+.texto-equacao {
     color: var(--color-text);
     font-size: 48px;
 }
@@ -197,7 +263,7 @@ ul {
     filter: drop-shadow(0 0 12px var(--color-accent));
 }
 
-.espaco_texto {
+.espaco-texto {
     display: flex;
     min-width: 40px;
     min-height: 80px;
@@ -206,7 +272,7 @@ ul {
 }
 
 /* Opções de resposta e estados das bolas */
-#telaOpcoes {
+#tela-opcoes {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
@@ -227,11 +293,11 @@ ul {
 }
 
 /* Ação de envio */
-#telaBotoes {
+#tela-botoes {
     padding: 10px;
 }
 
-#botaoEnviar {
+#botao-enviar {
     min-width: 200px;
     min-height: 50px;
     padding: 12px 16px;
@@ -239,12 +305,14 @@ ul {
     border: 0;
     border-radius: 1rem;
     color: var(--color-text);
+    font: inherit;
     font-size: 1.5rem;
     font-weight: bold;
+    cursor: pointer;
     transition: transform var(--transition-ui), filter var(--transition-ui);
 }
 
-#botaoEnviar:hover {
+#botao-enviar:hover {
     transform: translateY(-6px);
     filter: drop-shadow(0 0 8px var(--color-success-shadow));
 }
@@ -289,17 +357,13 @@ ul {
 }
 
 /* Tela de vitória e fim de jogo */
-#telaFim {
-    display: none;
+#tela-fim {
+    display: flex;
     width: 100%;
     min-height: 100vh;
     justify-content: center;
     align-items: center;
     padding: 24px;
-}
-
-#telaFim.aberta {
-    display: flex;
 }
 
 .cartao-fim {
@@ -337,7 +401,7 @@ ul {
     text-transform: uppercase;
 }
 
-#tituloFim {
+#titulo-fim {
     margin: 0 0 12px;
     color: var(--color-text);
     font-size: clamp(2rem, 6vw, 3rem);
@@ -350,7 +414,17 @@ ul {
     line-height: 1.6;
 }
 
-#botaoReiniciar {
+.acoes-fim {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+#botao-reiniciar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-height: 52px;
     padding: 12px 24px;
     background-color: var(--color-success);
@@ -360,10 +434,123 @@ ul {
     cursor: pointer;
     font: inherit;
     font-weight: bold;
+    text-decoration: none;
     transition: transform var(--transition-ui), filter var(--transition-ui);
 }
 
-#botaoReiniciar:hover {
+#botao-reiniciar:hover {
     transform: translateY(-2px);
     filter: drop-shadow(0 0 10px var(--color-success-shadow));
+}
+
+/* Tela de estatísticas */
+#tela-estatisticas {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: min(100%, 840px);
+    padding: 24px;
+}
+
+#barra-estatisticas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#titulo-estatisticas {
+    margin: 0;
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+}
+
+.subtitulo-secao {
+    margin: 0 0 12px;
+    font-size: 1.25rem;
+}
+
+.estado-vazio {
+    margin: 0;
+    padding: 32px 24px;
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-card);
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+#conteudo-estatisticas {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.grade-resumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 0;
+}
+
+.cartao-resumo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.cartao-resumo-valor {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-accent);
+}
+
+.cartao-resumo-rotulo {
+    font-size: 0.95rem;
+}
+
+.lista-niveis {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+}
+
+.cartao-nivel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+}
+
+.acoes-estatisticas {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.botao-perigo {
+    min-height: 48px;
+    padding: 12px 20px;
+    background-color: var(--color-result-error);
+    border: 0;
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform var(--transition-ui), filter var(--transition-ui);
+}
+
+.botao-perigo:hover {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 0 8px var(--color-surface-deep));
 }

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="styles.css">
+        <script type="module" src="modulos/controller/estatisticasController.mjs"></script>
+        <title>Aritmética — Estatísticas</title>
+    </head>
+    <body>
+        <main>
+            <section id="tela-estatisticas" aria-labelledby="titulo-estatisticas">
+                <header id="barra-estatisticas">
+                    <h1 id="titulo-estatisticas">Estatísticas</h1>
+                    <a id="botao-voltar" href="index.html" aria-label="Voltar para a tela inicial">
+                        <img id="img-voltar" src="imagens/voltar.svg" alt="" width="36" height="36">
+                    </a>
+                </header>
+
+                <p id="estatisticas-vazias" class="estado-vazio">
+                    Ainda não há partidas registradas. Jogue uma partida para acompanhar seu desempenho aqui.
+                </p>
+
+                <div id="conteudo-estatisticas" class="hidden">
+                    <section id="resumo-estatisticas" aria-labelledby="titulo-resumo">
+                        <h2 id="titulo-resumo" class="subtitulo-secao">Resumo geral</h2>
+                        <ul id="lista-resumo" class="grade-resumo"></ul>
+                    </section>
+
+                    <section id="detalhes-niveis" aria-labelledby="titulo-niveis">
+                        <h2 id="titulo-niveis" class="subtitulo-secao">Desempenho por nível</h2>
+                        <ul id="lista-niveis" class="lista-niveis"></ul>
+                    </section>
+
+                    <div class="acoes-estatisticas">
+                        <button id="botao-limpar-estatisticas" type="button" class="botao-perigo">
+                            Limpar estatísticas
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>
